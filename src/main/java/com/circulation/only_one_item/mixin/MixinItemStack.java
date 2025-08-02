@@ -31,13 +31,12 @@ public abstract class MixinItemStack {
 
     @Inject(method = "forgeInit",at = @At("TAIL"),remap = false)
     private void forgeInit(CallbackInfo ci) {
-        for (ItemConversionTarget conversion : MatchItemHandler.getTargets()) {
-            if (MatchItemHandler.match(conversion,this)){
-                item = conversion.getTarget();
-                delegate = item.delegate;
-                itemDamage = conversion.getTargetMeta();
-                break;
-            }
+        ItemConversionTarget target = MatchItemHandler.match(this);
+
+        if (target != null){
+            item = target.getTarget();
+            delegate = item.delegate;
+            itemDamage = target.getTargetMeta();
         }
     }
 
