@@ -59,6 +59,11 @@ public final class ItemConversionTarget {
         return this;
     }
 
+    public ItemConversionTarget setMatchItem(HashSet<MatchItem> matchItems){
+        this.matchItems = matchItems;
+        return this;
+    }
+
     @Desugar
     public record MatchItem(String oreName, int meta, String id) {
 

@@ -1,7 +1,9 @@
 package com.circulation.only_one_item;
 
+import com.circulation.only_one_item.util.MatchItemHandler;
 import net.minecraft.launchwrapper.LogWrapper;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -25,6 +27,11 @@ public class OnlyOneItem {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         OOIConfig.readConfig();
+    }
+
+    @Mod.EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
+        MatchItemHandler.InitTarget();
     }
 
 }

@@ -1,6 +1,5 @@
 package com.circulation.only_one_item.mixin;
 
-import com.circulation.only_one_item.OOIConfig;
 import com.circulation.only_one_item.util.ItemConversionTarget;
 import com.circulation.only_one_item.util.MatchItemHandler;
 import net.minecraft.item.Item;
@@ -32,7 +31,7 @@ public abstract class MixinItemStack {
 
     @Inject(method = "forgeInit",at = @At("TAIL"),remap = false)
     private void forgeInit(CallbackInfo ci) {
-        for (ItemConversionTarget conversion : OOIConfig.items) {
+        for (ItemConversionTarget conversion : MatchItemHandler.getTargets()) {
             if (MatchItemHandler.match(conversion,this)){
                 item = conversion.getTarget();
                 delegate = item.delegate;

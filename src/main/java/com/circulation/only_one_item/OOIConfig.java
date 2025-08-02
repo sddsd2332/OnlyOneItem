@@ -48,6 +48,7 @@ public class OOIConfig {
             }
         } else {
             blackList.add(ItemConversionTarget.MatchItem.getInstance("minecraft:gold_ingot",0));
+            blackList.add(ItemConversionTarget.MatchItem.getInstance("ingotGlod"));
             try {
                 Files.write(blackPath, config.toJson(blackList).getBytes());
             } catch (IOException ignored){
