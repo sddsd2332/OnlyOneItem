@@ -6,8 +6,9 @@ import org.apache.logging.log4j.Logger;
 import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class EarlyMixinLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
     public static final Logger LOG = LogManager.getLogger("OOI");

@@ -1,11 +1,7 @@
 package com.circulation.only_one_item;
 
-import com.circulation.only_one_item.proxy.CommonProxy;
 import net.minecraft.launchwrapper.LogWrapper;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -17,15 +13,10 @@ import org.apache.logging.log4j.Logger;
 )
 public class OnlyOneItem {
     public static final String MOD_ID = "only_one_item";
-    public static final String CLIENT_PROXY = "com.circulation.only_one_item.proxy.ClientProxy";
-    public static final String COMMON_PROXY = "com.circulation.only_one_item.proxy.CommonProxy";
 
     public static final SimpleNetworkWrapper NET_CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(MOD_ID);
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
-
-    @SidedProxy(clientSide = CLIENT_PROXY, serverSide = COMMON_PROXY)
-    public static CommonProxy proxy = null;
 
     @Mod.Instance(MOD_ID)
     public static OnlyOneItem instance = null;
@@ -33,17 +24,7 @@ public class OnlyOneItem {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        proxy.preInit();
-    }
-
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
-        proxy.init();
-    }
-
-    @Mod.EventHandler
-    public void postInit(FMLPostInitializationEvent event) {
-        proxy.postInit();
+        OOIConfig.readConfig();
     }
 
 }
