@@ -22,7 +22,7 @@ public record BlackMatchItem(Type type,String name,int meta) {
         return new BlackMatchItem(type,odOrmMdID,-1);
     }
 
-    public static BlackMatchItem getInstance(ItemConversionTarget.MatchItem mi){
+    public static BlackMatchItem getInstance(MatchItem mi){
         if (mi.oreName() != null){
             return new BlackMatchItem(Type.OreDict, mi.oreName(), -1);
         } else {

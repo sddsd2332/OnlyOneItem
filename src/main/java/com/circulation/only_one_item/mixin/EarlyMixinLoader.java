@@ -1,8 +1,6 @@
 package com.circulation.only_one_item.mixin;
 
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import javax.annotation.Nullable;
@@ -11,9 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class EarlyMixinLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
-    public static final Logger LOG = LogManager.getLogger("OOI");
-    public static final String LOG_PREFIX = "[OOI]" + ' ';
-    
+
     @Override
     public List<String> getMixinConfigs() {
         return Collections.singletonList("mixins.only_one_item.json");

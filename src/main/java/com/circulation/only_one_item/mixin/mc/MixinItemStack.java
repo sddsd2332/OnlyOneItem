@@ -1,4 +1,4 @@
-package com.circulation.only_one_item.mixin;
+package com.circulation.only_one_item.mixin.mc;
 
 import com.circulation.only_one_item.util.ItemConversionTarget;
 import com.circulation.only_one_item.handler.MatchItemHandler;

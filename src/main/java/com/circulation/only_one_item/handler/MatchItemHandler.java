@@ -4,18 +4,16 @@ import com.circulation.only_one_item.OOIConfig;
 import com.circulation.only_one_item.crt.CrtConversionTarget;
 import com.circulation.only_one_item.util.BlackMatchItem;
 import com.circulation.only_one_item.util.ItemConversionTarget;
+import com.circulation.only_one_item.util.MatchItem;
 import com.circulation.only_one_item.util.OOIItemStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Collections;
+import java.util.*;
 
 import static com.circulation.only_one_item.OOIConfig.blackList;
 
@@ -37,6 +35,11 @@ public class MatchItemHandler {
                 });
         list.clear();
         list = null;
+
+        var sl = FurnaceRecipes.instance().getSmeltingList();
+        var slc = new HashMap<>(sl);
+        sl.clear();
+        sl.putAll(slc);
     }
 
     public static synchronized void Clear(){
@@ -47,7 +50,9 @@ public class MatchItemHandler {
     public static synchronized void InitTarget(){
         BlackInit();
         Init();
-        if (Loader.isModLoaded("crafttweaker"))CrtInit();
+        if (!Loader.isModLoaded("crafttweaker")) {
+            MatchItemHandler.preItemStackInit();
+        }
     }
 
     public static synchronized void addPreItemStack(OOIItemStack i){
@@ -60,7 +65,7 @@ public class MatchItemHandler {
         if (!(obj instanceof ItemStack stack))return null;
         if (stack.isEmpty())return null;
 
-        ItemConversionTarget.MatchItem key = ItemConversionTarget.MatchItem.getInstance(stack);
+        MatchItem key = MatchItem.getInstance(stack);
         if (finalBlockSet.contains(BlackMatchItem.getInstance(key)) || finalBlockSet.contains(BlackMatchItem.getModIDInstance(stack))){
             return null;
         }
@@ -75,11 +80,11 @@ public class MatchItemHandler {
 
     private static void Init(){
         for (ItemConversionTarget t : OOIConfig.items) {
-            for (ItemConversionTarget.MatchItem matchItem : t.getMatchItems()) {
+            for (MatchItem matchItem : t.getMatchItems()) {
                 if (matchItem.oreName() != null) {
                     var list = OreDictionary.getOres(matchItem.oreName(),false);
                     list.stream()
-                            .map(ItemConversionTarget.MatchItem::getInstance)
+                            .map(MatchItem::getInstance)
                             .filter(matchItem1 -> !matchItem1.id().equals(t.getTargetID()) || matchItem1.meta() != t.getTargetMeta())
                             .forEach(m -> itemIdToTargetMap
                                     .computeIfAbsent(m.id(), k -> new HashMap<>())
@@ -87,7 +92,7 @@ public class MatchItemHandler {
                     var listC = new ArrayList<>(list);
                     list.clear();
                     for (ItemStack stack : listC) {
-                        var matchItem2 = ItemConversionTarget.MatchItem.getInstance(stack);
+                        var matchItem2 = MatchItem.getInstance(stack);
                         if (finalBlockSet.contains(BlackMatchItem.getInstance(matchItem2))){
                             list.add(stack);
                         }
@@ -116,13 +121,13 @@ public class MatchItemHandler {
     }
 
     @Optional.Method(modid = "crafttweaker")
-    private static void CrtInit(){
+    public static void CrtInit(){
         for (ItemConversionTarget t : CrtConversionTarget.set) {
-            for (ItemConversionTarget.MatchItem matchItem : t.getMatchItems()) {
+            for (MatchItem matchItem : t.getMatchItems()) {
                 if (matchItem.oreName() != null) {
                     var list = OreDictionary.getOres(matchItem.oreName(),false);
                     list.stream()
-                            .map(ItemConversionTarget.MatchItem::getInstance)
+                            .map(MatchItem::getInstance)
                             .filter(matchItem1 -> !matchItem1.id().equals(t.getTargetID()) || matchItem1.meta() != t.getTargetMeta())
                             .forEach(m -> itemIdToTargetMap
                                     .computeIfAbsent(m.id(), k -> new HashMap<>())

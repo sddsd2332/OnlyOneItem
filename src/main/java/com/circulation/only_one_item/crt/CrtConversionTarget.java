@@ -1,6 +1,7 @@
 package com.circulation.only_one_item.crt;
 
 import com.circulation.only_one_item.util.ItemConversionTarget;
+import com.circulation.only_one_item.util.MatchItem;
 import crafttweaker.annotations.ZenRegister;
 import crafttweaker.api.item.IItemStack;
 import crafttweaker.api.minecraft.CraftTweakerMC;
@@ -17,7 +18,7 @@ public class CrtConversionTarget {
 
     public static final HashSet<ItemConversionTarget> set = new HashSet<>();
 
-    private final HashSet<ItemConversionTarget.MatchItem> matchItems = new HashSet<>();
+    private final HashSet<MatchItem> matchItems = new HashSet<>();
 
     private final String targetID;
     private final int targetMeta;
@@ -34,14 +35,14 @@ public class CrtConversionTarget {
 
     @ZenMethod
     public CrtConversionTarget addMatchItem(IItemStack... stacks){
-        Collections.addAll(matchItems, ItemConversionTarget.MatchItem.getInstance(CraftTweakerMC.getItemStacks(stacks)));
+        Collections.addAll(matchItems, MatchItem.getInstance(CraftTweakerMC.getItemStacks(stacks)));
         return this;
     }
 
     @ZenMethod
     public CrtConversionTarget addMatchItem(IOreDictEntry... oreDictEntry){
         for (IOreDictEntry iOreDictEntry : oreDictEntry) {
-            matchItems.add(ItemConversionTarget.MatchItem.getInstance(iOreDictEntry.getName()));
+            matchItems.add(MatchItem.getInstance(iOreDictEntry.getName()));
         }
         return this;
     }
