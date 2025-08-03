@@ -40,7 +40,7 @@ public class OOIConfig {
 
         if (Files.exists(blackPath)){
             try {
-                blackList.addAll(config.fromJson(new String(Files.readAllBytes(blackPath)), (new TypeToken<HashSet<ItemConversionTarget.MatchItem>>() {}).getType()));
+                blackList.addAll(config.fromJson(new String(Files.readAllBytes(blackPath)), (new TypeToken<HashSet<BlackMatchItem>>() {}).getType()));
             } catch (IOException ignored) {
 
             }
