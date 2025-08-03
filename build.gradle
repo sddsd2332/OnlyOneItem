@@ -200,6 +200,7 @@ dependencies {
     annotationProcessor("org.jetbrains:annotations:24.1.0")
 
     implementation("CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.+")
+    implementation(rfg.deobf("curse.maven:mekanism-268560:2835175"))
 }
 
 apply from: 'gradle/scripts/dependencies.gradle'
