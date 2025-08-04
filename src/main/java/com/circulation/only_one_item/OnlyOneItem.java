@@ -1,9 +1,11 @@
 package com.circulation.only_one_item;
 
+import com.circulation.only_one_item.handler.InitHandler;
 import com.circulation.only_one_item.handler.MatchFluidHandler;
 import com.circulation.only_one_item.handler.MatchItemHandler;
 import net.minecraft.launchwrapper.LogWrapper;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -42,6 +44,9 @@ public class OnlyOneItem {
     public void init(FMLInitializationEvent event) {
         MatchItemHandler.InitTarget();
         MatchFluidHandler.Init();
+        if (!Loader.isModLoaded("crafttweaker")) {
+            InitHandler.allPreInit();
+        }
     }
 
 }

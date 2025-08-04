@@ -6,7 +6,6 @@ import com.circulation.only_one_item.crt.CrtConversionItemTarget;
 import com.circulation.only_one_item.util.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
@@ -90,9 +89,6 @@ public class MatchItemHandler {
     public static synchronized void InitTarget(){
         BlackInit();
         Init();
-        if (!Loader.isModLoaded("crafttweaker")) {
-            InitHandler.allPreInit();
-        }
     }
 
     public static synchronized void addPreItemStack(OOIItemStack i){
@@ -126,7 +122,11 @@ public class MatchItemHandler {
                     var list = OreDictionary.getOres(matchItem.oreName(), false);
                     list.stream()
                             .map(MatchItem::getInstance)
-                            .filter(matchItem1 -> !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null)))
+                            .filter(matchItem1 ->
+                                    !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null))
+                                            && !(finalBlockSet.contains(BlackMatchItem.getInstance(matchItem1))
+                                            || finalBlockSet.contains(BlackMatchItem.getModIDInstance(matchItem1)))
+                            )
                             .forEach(matchItem1 -> itemIdToTargetMap
                                     .computeIfAbsent(matchItem1.id(), k -> new HashMap<>())
                                     .put(matchItem1.meta(), t));
@@ -134,7 +134,7 @@ public class MatchItemHandler {
                     list.clear();
                     for (ItemStack stack : listC) {
                         var matchItem2 = MatchItem.getInstance(stack);
-                        if (finalBlockSet.contains(BlackMatchItem.getInstance(matchItem2))) {
+                        if (finalBlockSet.contains(BlackMatchItem.getInstance(matchItem2)) || finalBlockSet.contains(BlackMatchItem.getModIDInstance(stack))) {
                             list.add(stack);
                         }
                         if (allTarget.contains(SimpleItem.getInstance(matchItem2.id(), matchItem2.meta(), null))) {
@@ -167,7 +167,7 @@ public class MatchItemHandler {
     }
 
     @Optional.Method(modid = "crafttweaker")
-    public static void CrtInit(){
+    public static void CrtInit() {
         for (ItemConversionTarget t : CrtConversionItemTarget.list) {
             allTarget.add(SimpleItem.getInstance(t.getTargetID(), t.getTargetMeta(), null));
             for (MatchItem matchItem : t.getMatchItems()) {
@@ -175,7 +175,11 @@ public class MatchItemHandler {
                     var list = OreDictionary.getOres(matchItem.oreName(), false);
                     list.stream()
                             .map(MatchItem::getInstance)
-                            .filter(matchItem1 -> !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null)))
+                            .filter(matchItem1 ->
+                                    !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null))
+                                            && !(finalBlockSet.contains(BlackMatchItem.getInstance(matchItem1))
+                                            || finalBlockSet.contains(BlackMatchItem.getModIDInstance(matchItem1)))
+                            )
                             .forEach(m -> itemIdToTargetMap
                                     .computeIfAbsent(m.id(), k -> new HashMap<>())
                                     .put(m.meta(), t));
@@ -183,14 +187,14 @@ public class MatchItemHandler {
                     list.clear();
                     for (ItemStack stack : listC) {
                         var matchItem2 = BlackMatchItem.getInstance(stack);
-                        if (finalBlockSet.contains(matchItem2)) {
+                        if (finalBlockSet.contains(matchItem2) || finalBlockSet.contains(BlackMatchItem.getModIDInstance(stack))) {
                             list.add(stack);
                         }
                         if (allTarget.contains(SimpleItem.getInstance(matchItem2.name(), matchItem2.meta(), null))) {
                             list.add(stack);
                         }
                     }
-                    odToTargetMap.put(matchItem.oreName(),t);
+                    odToTargetMap.put(matchItem.oreName(), t);
                 } else if (matchItem.id() != null) {
                     if (!allTarget.contains(SimpleItem.getInstance(matchItem.id(), matchItem.meta(), null))) {
                         itemIdToTargetMap

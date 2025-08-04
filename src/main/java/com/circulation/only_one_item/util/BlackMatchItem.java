@@ -30,6 +30,10 @@ public record BlackMatchItem(Type type,String name,int meta) {
         }
     }
 
+    public static BlackMatchItem getModIDInstance(MatchItem mi){
+        return new BlackMatchItem(Type.ModID,mi.id().split(":")[0], -1);
+    }
+
     public static BlackMatchItem getModIDInstance(ItemStack stack){
         var id = stack.getItem().getRegistryName();
         return new BlackMatchItem(Type.ModID,id == null ? "" : id.getNamespace(), -1);
