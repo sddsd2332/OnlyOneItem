@@ -3,6 +3,7 @@ package com.circulation.only_one_item.handler;
 import com.circulation.only_one_item.OOIConfig;
 import com.circulation.only_one_item.conversion.ItemConversionTarget;
 import com.circulation.only_one_item.crt.CrtConversionItemTarget;
+import com.circulation.only_one_item.emun.Type;
 import com.circulation.only_one_item.util.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
@@ -24,6 +25,7 @@ public class MatchItemHandler {
     @SubscribeEvent
     public void onOreRegister(OreDictionary.OreRegisterEvent event){
         var od = event.getName();
+        if (finalBlackSet.contains(BlackMatchItem.getInstance(Type.OreDict,od)))return;
         if (odToTargetMap.containsKey(od)){
             var ore = event.getOre();
             var m = MatchItem.getInstance(ore);
@@ -37,7 +39,7 @@ public class MatchItemHandler {
 
     private static final HashMap<String, Map<Integer, ItemConversionTarget>> itemIdToTargetMap = new HashMap<>();
     private static final HashMap<String, ItemConversionTarget> odToTargetMap = new HashMap<>();
-    public static final HashSet<BlackMatchItem> finalBlockSet = new HashSet<>();
+    public static final HashSet<BlackMatchItem> finalBlackSet = new HashSet<>();
     public static final HashSet<SimpleItem> allTarget = new HashSet<>();
 
     private static ArrayList<WeakReference<OOIItemStack>> list = new ArrayList<>();
@@ -83,7 +85,7 @@ public class MatchItemHandler {
 
     public static synchronized void Clear(){
         itemIdToTargetMap.clear();
-        finalBlockSet.clear();
+        finalBlackSet.clear();
     }
 
     public static synchronized void InitTarget(){
@@ -102,7 +104,7 @@ public class MatchItemHandler {
         if (stack.isEmpty())return null;
 
         MatchItem key = MatchItem.getInstance(stack);
-        if (finalBlockSet.contains(BlackMatchItem.getInstance(key)) || finalBlockSet.contains(BlackMatchItem.getModIDInstance(stack))){
+        if (finalBlackSet.contains(BlackMatchItem.getInstance(key)) || finalBlackSet.contains(BlackMatchItem.getModIDInstance(stack))){
             return null;
         }
 
@@ -124,8 +126,8 @@ public class MatchItemHandler {
                             .map(MatchItem::getInstance)
                             .filter(matchItem1 ->
                                     !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null))
-                                            && !(finalBlockSet.contains(BlackMatchItem.getInstance(matchItem1))
-                                            || finalBlockSet.contains(BlackMatchItem.getModIDInstance(matchItem1)))
+                                            && !(finalBlackSet.contains(BlackMatchItem.getInstance(matchItem1))
+                                            || finalBlackSet.contains(BlackMatchItem.getModIDInstance(matchItem1)))
                             )
                             .forEach(matchItem1 -> itemIdToTargetMap
                                     .computeIfAbsent(matchItem1.id(), k -> new HashMap<>())
@@ -134,7 +136,7 @@ public class MatchItemHandler {
                     list.clear();
                     for (ItemStack stack : listC) {
                         var matchItem2 = MatchItem.getInstance(stack);
-                        if (finalBlockSet.contains(BlackMatchItem.getInstance(matchItem2)) || finalBlockSet.contains(BlackMatchItem.getModIDInstance(stack))) {
+                        if (finalBlackSet.contains(BlackMatchItem.getInstance(matchItem2)) || finalBlackSet.contains(BlackMatchItem.getModIDInstance(stack))) {
                             list.add(stack);
                         }
                         if (allTarget.contains(SimpleItem.getInstance(matchItem2.id(), matchItem2.meta(), null))) {
@@ -157,10 +159,13 @@ public class MatchItemHandler {
     private static void BlackInit(){
         for (BlackMatchItem matchItem : OOIConfig.blackList) {
             switch (matchItem.type()){
-                case Item,ModID -> finalBlockSet.add(matchItem);
-                case OreDict -> OreDictionary.getOres(matchItem.name()).stream()
-                        .map(BlackMatchItem::getInstance)
-                        .forEach(finalBlockSet::add);
+                case Item,ModID -> finalBlackSet.add(matchItem);
+                case OreDict -> {
+                    OreDictionary.getOres(matchItem.name()).stream()
+                            .map(BlackMatchItem::getInstance)
+                            .forEach(finalBlackSet::add);
+                    finalBlackSet.add(matchItem);
+                }
             }
         }
         OOIConfig.blackList.clear();
@@ -177,8 +182,8 @@ public class MatchItemHandler {
                             .map(MatchItem::getInstance)
                             .filter(matchItem1 ->
                                     !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null))
-                                            && !(finalBlockSet.contains(BlackMatchItem.getInstance(matchItem1))
-                                            || finalBlockSet.contains(BlackMatchItem.getModIDInstance(matchItem1)))
+                                            && !(finalBlackSet.contains(BlackMatchItem.getInstance(matchItem1))
+                                            || finalBlackSet.contains(BlackMatchItem.getModIDInstance(matchItem1)))
                             )
                             .forEach(m -> itemIdToTargetMap
                                     .computeIfAbsent(m.id(), k -> new HashMap<>())
@@ -187,7 +192,7 @@ public class MatchItemHandler {
                     list.clear();
                     for (ItemStack stack : listC) {
                         var matchItem2 = BlackMatchItem.getInstance(stack);
-                        if (finalBlockSet.contains(matchItem2) || finalBlockSet.contains(BlackMatchItem.getModIDInstance(stack))) {
+                        if (finalBlackSet.contains(matchItem2) || finalBlackSet.contains(BlackMatchItem.getModIDInstance(stack))) {
                             list.add(stack);
                         }
                         if (allTarget.contains(SimpleItem.getInstance(matchItem2.name(), matchItem2.meta(), null))) {
