@@ -1,15 +1,15 @@
-package com.circulation.only_one_item.util;
+package com.circulation.only_one_item.conversion;
 
+import com.circulation.only_one_item.util.MatchItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
+import java.util.Set;
 
 public final class ItemConversionTarget {
-    private HashSet<MatchItem> matchItems;
-    private int hashCode = 0;
+    private Set<MatchItem> matchItems;
 
     private final String targetID;
     private final int targetMeta;
@@ -22,7 +22,7 @@ public final class ItemConversionTarget {
         return targetID;
     }
 
-    public HashSet<MatchItem> getMatchItems() {
+    public Set<MatchItem> getMatchItems() {
         return matchItems;
     }
 
@@ -35,21 +35,6 @@ public final class ItemConversionTarget {
         this.targetMeta = targetMeta;
     }
 
-    @Override
-    public boolean equals(Object obj){
-        if (this == obj)return true;
-        if (obj instanceof ItemConversionTarget ict){
-            return Objects.equals(this.targetID, ict.targetID) && this.targetMeta == ict.targetMeta;
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode(){
-        if (hashCode == 0) hashCode = Objects.hash(targetID,targetMeta);
-        return hashCode;
-    }
-
     public ItemConversionTarget addMatchItem(ItemStack... stacks){
         if (matchItems == null){
             matchItems = new HashSet<>();
@@ -58,9 +43,8 @@ public final class ItemConversionTarget {
         return this;
     }
 
-    public ItemConversionTarget setMatchItem(HashSet<MatchItem> matchItems){
+    public ItemConversionTarget setMatchItem(Set<MatchItem> matchItems){
         this.matchItems = matchItems;
         return this;
     }
-
 }

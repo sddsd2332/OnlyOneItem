@@ -12,8 +12,8 @@ import stanhebben.zenscript.annotations.ZenMethod;
 import static com.circulation.only_one_item.handler.MatchItemHandler.finalBlockSet;
 
 @ZenRegister
-@ZenClass("mods.ooi.BlockList")
-public class CrtBlockList {
+@ZenClass("mods.ooi.BlackList")
+public class CrtBlackList {
 
     @ZenMethod
     public static void addMatchItem(IItemStack... stacks){

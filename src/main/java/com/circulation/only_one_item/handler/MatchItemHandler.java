@@ -1,26 +1,45 @@
 package com.circulation.only_one_item.handler;
 
 import com.circulation.only_one_item.OOIConfig;
-import com.circulation.only_one_item.crt.CrtConversionTarget;
+import com.circulation.only_one_item.conversion.ItemConversionTarget;
+import com.circulation.only_one_item.crt.CrtConversionItemTarget;
 import com.circulation.only_one_item.util.*;
-import mekanism.common.recipe.RecipeHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-
-import static com.circulation.only_one_item.OOIConfig.blackList;
 
 public class MatchItemHandler {
 
+    public static MatchItemHandler INSTANCE = new MatchItemHandler();
+
+    private MatchItemHandler() {
+
+    }
+
+    @SubscribeEvent
+    public void onOreRegister(OreDictionary.OreRegisterEvent event){
+        var od = event.getName();
+        if (odToTargetMap.containsKey(od)){
+            var ore = event.getOre();
+            var m = MatchItem.getInstance(ore);
+            itemIdToTargetMap
+                    .computeIfAbsent(m.id(), k -> new HashMap<>())
+                    .put(m.meta(), odToTargetMap.get(od));
+            OreDictionary.getOres(od).remove(ore);
+            ((OOIItemStack)(Object)ore).ooi$ooiInit();
+        }
+    }
+
     private static final HashMap<String, Map<Integer, ItemConversionTarget>> itemIdToTargetMap = new HashMap<>();
+    private static final HashMap<String, ItemConversionTarget> odToTargetMap = new HashMap<>();
     public static final HashSet<BlackMatchItem> finalBlockSet = new HashSet<>();
+    public static final HashSet<SimpleItem> allTarget = new HashSet<>();
 
     private static ArrayList<WeakReference<OOIItemStack>> list = new ArrayList<>();
 
@@ -34,18 +53,33 @@ public class MatchItemHandler {
                     if (item != null) item.ooi$ooiInit();
                 });
         list.clear();
+        allTarget.clear();
+
         list = null;
 
         var sl = FurnaceRecipes.instance().getSmeltingList();
         var slc = new HashMap<>(sl);
-        sl.clear();
-        sl.putAll(slc);
+
         var el = FurnaceRecipes.instance().experienceList;
         var elc = new HashMap<>(el);
-        el.clear();
-        el.putAll(elc);
 
-        if (Loader.isModLoaded("mekanism"))MekInit();
+        sl.clear();
+        el.clear();
+
+        Map<SimpleItem, ItemStack> uniqueKeys = new HashMap<>(sl.size());
+
+        for (Map.Entry<ItemStack, ItemStack> stack : slc.entrySet()) {
+            ItemStack key = stack.getKey();
+            var s = SimpleItem.getInstance(key);
+
+            ItemStack canonicalKey = uniqueKeys.computeIfAbsent(s, k -> key);
+
+            if (canonicalKey == key) {
+                sl.put(key, stack.getValue());
+            }
+        }
+
+        el.putAll(elc);
     }
 
     public static synchronized void Clear(){
@@ -57,7 +91,7 @@ public class MatchItemHandler {
         BlackInit();
         Init();
         if (!Loader.isModLoaded("crafttweaker")) {
-            MatchItemHandler.preItemStackInit();
+            InitHandler.allPreInit();
         }
     }
 
@@ -84,39 +118,44 @@ public class MatchItemHandler {
                 .get(meta);
     }
 
-    private static void Init(){
+    private static void Init() {
         for (ItemConversionTarget t : OOIConfig.items) {
+            MatchItemHandler.allTarget.add(SimpleItem.getInstance(t.getTargetID(), t.getTargetMeta(), null));
             for (MatchItem matchItem : t.getMatchItems()) {
                 if (matchItem.oreName() != null) {
-                    var list = OreDictionary.getOres(matchItem.oreName(),false);
+                    var list = OreDictionary.getOres(matchItem.oreName(), false);
                     list.stream()
                             .map(MatchItem::getInstance)
-                            .filter(matchItem1 -> !matchItem1.id().equals(t.getTargetID()) || matchItem1.meta() != t.getTargetMeta())
-                            .forEach(m -> itemIdToTargetMap
-                                    .computeIfAbsent(m.id(), k -> new HashMap<>())
-                                    .put(m.meta(), t));
+                            .filter(matchItem1 -> !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null)))
+                            .forEach(matchItem1 -> itemIdToTargetMap
+                                    .computeIfAbsent(matchItem1.id(), k -> new HashMap<>())
+                                    .put(matchItem1.meta(), t));
                     var listC = new ArrayList<>(list);
                     list.clear();
                     for (ItemStack stack : listC) {
                         var matchItem2 = MatchItem.getInstance(stack);
-                        if (finalBlockSet.contains(BlackMatchItem.getInstance(matchItem2))){
+                        if (finalBlockSet.contains(BlackMatchItem.getInstance(matchItem2))) {
                             list.add(stack);
                         }
-                        if (t.getTargetID().equals(matchItem2.id()) && t.getTargetMeta() == matchItem2.meta()){
+                        if (allTarget.contains(SimpleItem.getInstance(matchItem2.id(), matchItem2.meta(), null))) {
                             list.add(stack);
                         }
                     }
+                    odToTargetMap.put(matchItem.oreName(),t);
                 } else if (matchItem.id() != null) {
-                    itemIdToTargetMap
-                            .computeIfAbsent(matchItem.id(), k -> new HashMap<>())
-                            .put(matchItem.meta(), t);
+                    if (!allTarget.contains(SimpleItem.getInstance(matchItem.id(), matchItem.meta(), null))) {
+                        itemIdToTargetMap
+                                .computeIfAbsent(matchItem.id(), k -> new HashMap<>())
+                                .put(matchItem.meta(), t);
+                    }
                 }
             }
         }
+        OOIConfig.items.clear();
     }
 
     private static void BlackInit(){
-        for (BlackMatchItem matchItem : blackList) {
+        for (BlackMatchItem matchItem : OOIConfig.blackList) {
             switch (matchItem.type()){
                 case Item,ModID -> finalBlockSet.add(matchItem);
                 case OreDict -> OreDictionary.getOres(matchItem.name()).stream()
@@ -124,17 +163,19 @@ public class MatchItemHandler {
                         .forEach(finalBlockSet::add);
             }
         }
+        OOIConfig.blackList.clear();
     }
 
     @Optional.Method(modid = "crafttweaker")
     public static void CrtInit(){
-        for (ItemConversionTarget t : CrtConversionTarget.set) {
+        for (ItemConversionTarget t : CrtConversionItemTarget.list) {
+            allTarget.add(SimpleItem.getInstance(t.getTargetID(), t.getTargetMeta(), null));
             for (MatchItem matchItem : t.getMatchItems()) {
                 if (matchItem.oreName() != null) {
-                    var list = OreDictionary.getOres(matchItem.oreName(),false);
+                    var list = OreDictionary.getOres(matchItem.oreName(), false);
                     list.stream()
                             .map(MatchItem::getInstance)
-                            .filter(matchItem1 -> !matchItem1.id().equals(t.getTargetID()) || matchItem1.meta() != t.getTargetMeta())
+                            .filter(matchItem1 -> !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null)))
                             .forEach(m -> itemIdToTargetMap
                                     .computeIfAbsent(m.id(), k -> new HashMap<>())
                                     .put(m.meta(), t));
@@ -142,44 +183,23 @@ public class MatchItemHandler {
                     list.clear();
                     for (ItemStack stack : listC) {
                         var matchItem2 = BlackMatchItem.getInstance(stack);
-                        if (finalBlockSet.contains(matchItem2)){
+                        if (finalBlockSet.contains(matchItem2)) {
                             list.add(stack);
                         }
-                        if (t.getTargetID().equals(matchItem2.name()) && t.getTargetMeta() == matchItem2.meta()){
+                        if (allTarget.contains(SimpleItem.getInstance(matchItem2.name(), matchItem2.meta(), null))) {
                             list.add(stack);
                         }
                     }
+                    odToTargetMap.put(matchItem.oreName(),t);
                 } else if (matchItem.id() != null) {
-                    itemIdToTargetMap
-                            .computeIfAbsent(matchItem.id(), k -> new HashMap<>())
-                            .put(matchItem.meta(), t);
+                    if (!allTarget.contains(SimpleItem.getInstance(matchItem.id(), matchItem.meta(), null))) {
+                        itemIdToTargetMap
+                                .computeIfAbsent(matchItem.id(), k -> new HashMap<>())
+                                .put(matchItem.meta(), t);
+                    }
                 }
             }
         }
+        CrtConversionItemTarget.list.clear();
     }
-
-    @Optional.Method(modid = "mekanism")
-    public static void MekInit(){
-        RecipeHandler.Recipe.values().forEach(recipe -> ((OOIMekRecipe) recipe).ooi$clear());
-
-        try {
-            Class<?> clazz = Class.forName("mekanism.common.MekanismRecipe");
-            clazz.getMethod("addRecipes")
-                    .invoke(null);
-            Class<?> clazz0 = Class.forName("mekanism.generators.common.MekanismGenerators");
-            clazz0.getMethod("registerRecipes", RegistryEvent.Register.class)
-                    .invoke(null, (Object) null);
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
-                 InvocationTargetException ignored) {
-            try {
-                Class<?> clazz = Class.forName("mekanism.common.Mekanism");
-                clazz.getMethod("addRecipes")
-                        .invoke(null);
-            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
-                     InvocationTargetException ignored0) {
-
-            }
-        }
-    }
-
 }

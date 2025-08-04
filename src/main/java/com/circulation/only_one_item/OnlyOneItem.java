@@ -1,7 +1,9 @@
 package com.circulation.only_one_item;
 
+import com.circulation.only_one_item.handler.MatchFluidHandler;
 import com.circulation.only_one_item.handler.MatchItemHandler;
 import net.minecraft.launchwrapper.LogWrapper;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -28,6 +30,7 @@ public class OnlyOneItem {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(MatchItemHandler.INSTANCE);
         try {
             OOIConfig.readConfig();
         } catch (IOException ignored) {
@@ -38,6 +41,7 @@ public class OnlyOneItem {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         MatchItemHandler.InitTarget();
+        MatchFluidHandler.Init();
     }
 
 }
