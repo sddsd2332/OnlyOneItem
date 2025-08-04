@@ -7,9 +7,13 @@ import com.circulation.only_one_item.emun.Type;
 import com.circulation.only_one_item.util.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.GameData;
+import net.minecraftforge.registries.RegistryManager;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -81,6 +85,30 @@ public class MatchItemHandler {
         }
 
         el.putAll(elc);
+    }
+
+    public static void clearRecipe(){
+        Set<RecipeSignature> recipes = new HashSet<>();
+        List<IRecipe> toRemove = new ArrayList<>();
+        final ForgeRegistry<IRecipe> a = RegistryManager.ACTIVE.getRegistry(GameData.RECIPES);
+
+        for (IRecipe r : a) {
+            var rs = new RecipeSignature(r);
+            if (recipes.contains(rs)) {
+                toRemove.add(r);
+            } else {
+                recipes.add(rs);
+            }
+        }
+
+        toRemove.forEach(r -> MatchItemHandler.removeCraft(a,r));
+
+        recipes.clear();
+        toRemove.clear();
+    }
+
+    private static void removeCraft(ForgeRegistry<?> f, IRecipe r){
+        f.remove(r.getRegistryName());
     }
 
     public static synchronized void Clear(){
