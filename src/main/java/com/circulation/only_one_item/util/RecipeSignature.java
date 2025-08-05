@@ -85,12 +85,6 @@ public class RecipeSignature {
             }
         }
 
-        if (cleanInputSignatures.size() != 1 && recipe instanceof IShapedRecipe && !(repeat && cleanInputSignatures.size() == 9)) {
-            cleanInputSignatures.clear();
-        } else {
-            signatures.clear();
-        }
-
         return signatures;
     }
 
@@ -125,7 +119,7 @@ public class RecipeSignature {
     public void rebuildRecipe() {
         var NAME = getRecipeName();
         var out = outputSignature.getItemStack(outputAmount);
-        if (shaped) {
+        if (shaped || cleanInputSignatures.size() == 9) {
             NonNullList<Ingredient> inputs = NonNullList.create();
             for (Object input : inputSignatures) {
                 if (input instanceof String od) {
@@ -180,9 +174,6 @@ public class RecipeSignature {
 
     private String getRecipeName() {
         return (shaped ? "shaped" : "shapeless")
-                + outputSignature.getItem()
-                + "-"
-                + outputSignature.getMeta()
                 + "-"
                 + hashCode;
     }
