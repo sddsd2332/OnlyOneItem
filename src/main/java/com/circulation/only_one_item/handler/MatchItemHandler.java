@@ -8,10 +8,10 @@ import com.circulation.only_one_item.util.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.RegistryManager;
 
@@ -27,17 +27,17 @@ public class MatchItemHandler {
     }
 
     @SubscribeEvent
-    public void onOreRegister(OreDictionary.OreRegisterEvent event){
+    public void onOreRegister(OreDictionary.OreRegisterEvent event) {
         var od = event.getName();
-        if (finalBlackSet.contains(BlackMatchItem.getInstance(Type.OreDict,od)))return;
-        if (odToTargetMap.containsKey(od)){
+        if (finalBlackSet.contains(BlackMatchItem.getInstance(Type.OreDict, od))) return;
+        if (odToTargetMap.containsKey(od)) {
             var ore = event.getOre();
             var m = MatchItem.getInstance(ore);
             itemIdToTargetMap
                     .computeIfAbsent(m.id(), k -> new HashMap<>())
                     .put(m.meta(), odToTargetMap.get(od));
             OreDictionary.getOres(od).remove(ore);
-            ((OOIItemStack)(Object)ore).ooi$ooiInit();
+            ((OOIItemStack) (Object) ore).ooi$ooiInit();
         }
     }
 
@@ -51,7 +51,7 @@ public class MatchItemHandler {
     public static void preItemStackInit() {
         if (list == null)
             throw new RuntimeException("[OOI] Initialization should not be performed multiple times");
-        ((OOIItemStack)(Object)ItemStack.EMPTY).ooi$init();
+        ((OOIItemStack) (Object) ItemStack.EMPTY).ooi$init();
         list.parallelStream()
                 .forEach(ref -> {
                     var item = ref.get();
@@ -87,52 +87,54 @@ public class MatchItemHandler {
         el.putAll(elc);
     }
 
-    public static void clearRecipe(){
-        Set<RecipeSignature> recipes = new HashSet<>();
-        List<IRecipe> toRemove = new ArrayList<>();
-        final ForgeRegistry<IRecipe> a = RegistryManager.ACTIVE.getRegistry(GameData.RECIPES);
+    public static void clearRecipe() {
+        Map<RecipeSignature, List<IRecipe>> recipes = new HashMap<>();
+        Set<RecipeSignature> recipes0 = new HashSet<>();
+        final var a = RegistryManager.ACTIVE.<IRecipe>getRegistry(GameData.RECIPES);
 
-        for (IRecipe r : a) {
-            var rs = new RecipeSignature(r);
-            if (recipes.contains(rs)) {
-                toRemove.add(r);
-            } else {
-                recipes.add(rs);
-            }
+        for (Map.Entry<ResourceLocation, IRecipe> s : a.getEntries()) {
+            var recipe = s.getValue();
+            if (recipe == null || recipe.getRecipeOutput() == ItemStack.EMPTY) continue;
+
+            var rs = new RecipeSignature(recipe);
+
+            recipes.computeIfAbsent(rs, v -> new ArrayList<>())
+                    .add(recipe);
         }
 
-        toRemove.forEach(r -> MatchItemHandler.removeCraft(a,r));
+        recipes.forEach((r, l) -> {
+            if (l.size() > 1) {
+                l.forEach(i -> a.remove(i.getRegistryName()));
+                recipes0.add(r);
+            }
+        });
 
         recipes.clear();
-        toRemove.clear();
+        recipes0.forEach(RecipeSignature::rebuildRecipe);
     }
 
-    private static void removeCraft(ForgeRegistry<?> f, IRecipe r){
-        f.remove(r.getRegistryName());
-    }
-
-    public static synchronized void Clear(){
+    public static synchronized void Clear() {
         itemIdToTargetMap.clear();
         finalBlackSet.clear();
     }
 
-    public static synchronized void InitTarget(){
+    public static synchronized void InitTarget() {
         BlackInit();
         Init();
     }
 
-    public static synchronized void addPreItemStack(OOIItemStack i){
+    public static synchronized void addPreItemStack(OOIItemStack i) {
         if (list == null)
             throw new RuntimeException("[OOI] It should not be added again after initialization");
         list.add(new WeakReference<>(i));
     }
 
     public static ItemConversionTarget match(Object obj) {
-        if (!(obj instanceof ItemStack stack))return null;
-        if (stack.isEmpty())return null;
+        if (!(obj instanceof ItemStack stack)) return null;
+        if (stack.isEmpty()) return null;
 
         MatchItem key = MatchItem.getInstance(stack);
-        if (finalBlackSet.contains(BlackMatchItem.getInstance(key)) || finalBlackSet.contains(BlackMatchItem.getModIDInstance(stack))){
+        if (finalBlackSet.contains(BlackMatchItem.getInstance(key)) || finalBlackSet.contains(BlackMatchItem.getModIDInstance(stack))) {
             return null;
         }
 
@@ -171,7 +173,7 @@ public class MatchItemHandler {
                             list.add(stack);
                         }
                     }
-                    odToTargetMap.put(matchItem.oreName(),t);
+                    odToTargetMap.put(matchItem.oreName(), t);
                 } else if (matchItem.id() != null) {
                     if (!allTarget.contains(SimpleItem.getInstance(matchItem.id(), matchItem.meta(), null))) {
                         itemIdToTargetMap
@@ -184,10 +186,10 @@ public class MatchItemHandler {
         OOIConfig.items.clear();
     }
 
-    private static void BlackInit(){
+    private static void BlackInit() {
         for (BlackMatchItem matchItem : OOIConfig.blackList) {
-            switch (matchItem.type()){
-                case Item,ModID -> finalBlackSet.add(matchItem);
+            switch (matchItem.type()) {
+                case Item, ModID -> finalBlackSet.add(matchItem);
                 case OreDict -> {
                     OreDictionary.getOres(matchItem.name()).stream()
                             .map(BlackMatchItem::getInstance)
@@ -239,4 +241,5 @@ public class MatchItemHandler {
         }
         CrtConversionItemTarget.list.clear();
     }
+
 }

@@ -41,7 +41,9 @@ public class MatchFluidHandler {
 
     public static Fluid match(Object obj) {
         if (!(obj instanceof FluidStack stack))return null;
-        return fluidNameToTargetMap.get(stack.getFluid().getName());
+        Fluid fluid = stack.getFluid();
+        if (stack.getFluid() == null)return null;
+        return fluidNameToTargetMap.get(fluid.getName());
     }
 
     public static void Init() {
