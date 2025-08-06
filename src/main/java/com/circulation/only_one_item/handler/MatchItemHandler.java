@@ -9,8 +9,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.RegistryManager;
@@ -38,6 +41,13 @@ public class MatchItemHandler {
                     .put(m.meta(), odToTargetMap.get(od));
             OreDictionary.getOres(od).remove(ore);
             ((OOIItemStack) (Object) ore).ooi$ooiInit();
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (Loader.isModLoaded("unidict")){
+            event.player.sendStatusMessage(new TextComponentTranslation("ooi.ud.warn"),false);
         }
     }
 
