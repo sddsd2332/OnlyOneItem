@@ -55,6 +55,11 @@ public abstract class MixinFluidStack implements OOIFluidStack {
         }
     }
 
+    @Override
+    public IRegistryDelegate<Fluid> ooi$getFluidDelegate(){
+        return this.fluidDelegate;
+    }
+
     @Unique
     private static IRegistryDelegate<Fluid> ooi$makeDelegate(Fluid fluid){
         if (ooi$delegates == null){

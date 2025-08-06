@@ -30,7 +30,7 @@ public class MatchFluidHandler {
                     var fluid = ref.get();
                     if (fluid != null) {
                         IRegistryDelegate<Fluid> stack;
-                        if ((stack = fluid.ooi$getFluidDelegate((FluidStack) fluid)) != null){
+                        if ((stack = fluid.ooi$getFluidDelegate()) != null){
                             fluid.ooi$ooiInit(stack.get());
                         }
                     }
