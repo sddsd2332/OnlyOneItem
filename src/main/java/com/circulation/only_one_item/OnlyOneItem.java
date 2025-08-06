@@ -50,7 +50,9 @@ public class OnlyOneItem {
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-        MatchItemHandler.clearRecipe();
+        if (!Loader.isModLoaded("unidict")) {
+            MatchItemHandler.clearRecipe();
+        }
     }
 
 }
