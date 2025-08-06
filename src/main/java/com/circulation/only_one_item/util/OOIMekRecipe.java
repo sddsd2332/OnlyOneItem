@@ -2,6 +2,6 @@ package com.circulation.only_one_item.util;
 
 public interface OOIMekRecipe {
 
-    void ooi$clear();
+    void ooi$refresh();
 
 }

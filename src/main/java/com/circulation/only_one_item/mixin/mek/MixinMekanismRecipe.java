@@ -21,7 +21,9 @@ public abstract class MixinMekanismRecipe<INPUT extends MachineInput<INPUT>, OUT
 
     @Unique
     @Override
-    public void ooi$clear(){
-        this.recipes.clear();
+    public void ooi$refresh(){
+        HashMap<INPUT, RECIPE> map = new HashMap<>(recipes);
+        recipes.clear();
+        recipes.putAll(map);
     }
 }

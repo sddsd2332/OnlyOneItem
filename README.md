@@ -1,6 +1,7 @@
 # Only One Item (1.12)
 
 Requires mixinbooter version 8.0 or higher
+**Not compatible with UniDict**
 
 1. [简体中文](#简体中文)
 2. [English](#English)

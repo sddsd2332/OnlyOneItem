@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 @Mixin(FluidStack.class)
+
 public abstract class MixinFluidStack implements OOIFluidStack {
 
     @Unique
@@ -31,7 +32,7 @@ public abstract class MixinFluidStack implements OOIFluidStack {
     @Inject(method = "<init>(Lnet/minecraftforge/fluids/Fluid;I)V",at = @At("TAIL"),remap = false)
     private void onInit(Fluid fluid, int amount, CallbackInfo ci){
         if (ooi$init){
-            ooi$ooiInit();
+            ooi$ooiInit(fluid);
         } else {
             MatchFluidHandler.addPreFluidStack(this);
         }
@@ -43,7 +44,7 @@ public abstract class MixinFluidStack implements OOIFluidStack {
     }
 
     @Override
-    public void ooi$ooiInit(){
+    public void ooi$ooiInit(Fluid fluid){
         Fluid target = MatchFluidHandler.match(this);
 
         if (target != null){

@@ -7,10 +7,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
+import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.IShapedRecipe;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.OreIngredient;
 import net.minecraftforge.registries.ForgeRegistry;
@@ -117,10 +116,10 @@ public class RecipeSignature {
     }
 
     public void rebuildRecipe() {
-        var NAME = getRecipeName();
         var out = outputSignature.getItemStack(outputAmount);
-        if (shaped || cleanInputSignatures.size() == 9) {
-            NonNullList<Ingredient> inputs = NonNullList.create();
+        var NAME = getRecipeName(out);
+        NonNullList<Ingredient> inputs = NonNullList.create();
+        if (shaped) {
             for (Object input : inputSignatures) {
                 if (input instanceof String od) {
                     inputs.add(od.isEmpty() ?
@@ -143,37 +142,48 @@ public class RecipeSignature {
                     inputs.add(Ingredient.EMPTY);
                 }
             }
+            if (isEmpty(inputs)) {
+                return;
+            }
             fr.register(new ShapedRecipes("", width, height, inputs,out).setRegistryName(OnlyOneItem.MOD_ID, NAME));
         } else {
-            Ingredient[] inputs = new Ingredient[cleanInputSignatures.size()];
-            int i = 0;
             for (Object input : cleanInputSignatures) {
                 if (input instanceof String od) {
-                    inputs[i++] = od.isEmpty() ?
+                    inputs.add(od.isEmpty() ?
                             Ingredient.EMPTY
-                            : new OreIngredient(od);
+                            : new OreIngredient(od));
                 } else if (input instanceof Multiset<?> items) {
-                    inputs[i++] = Ingredient.fromStacks(items.stream()
+                    inputs.add(Ingredient.fromStacks(items.stream()
                             .map(ii -> {
                                 if (ii instanceof SimpleItem s) {
                                     return s.getItemStack(1);
                                 }
                                 return ItemStack.EMPTY;
                             })
-                            .toArray(ItemStack[]::new));
+                            .toArray(ItemStack[]::new)));
                 }
             }
-            GameRegistry.addShapelessRecipe(
-                    new ResourceLocation(OnlyOneItem.MOD_ID, NAME),
-                    null,
-                    out,
-                    inputs
-            );
+            if (isEmpty(inputs)) {
+                return;
+            }
+            fr.register(new ShapelessRecipes("", out,inputs).setRegistryName(OnlyOneItem.MOD_ID, NAME));
         }
     }
 
-    private String getRecipeName() {
+    private boolean isEmpty(Collection<Ingredient> inputs){
+        if (inputs.isEmpty())return true;
+        for (Ingredient input : inputs) {
+            if (input != Ingredient.EMPTY){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String getRecipeName(ItemStack stack) {
         return (shaped ? "shaped" : "shapeless")
+                + "-"
+                + BlackMatchItem.getModIDInstance(stack).name()
                 + "-"
                 + hashCode;
     }

@@ -27,7 +27,7 @@ public class MatchFluidHandler {
         list.parallelStream()
                 .forEach(ref -> {
                     var fluid = ref.get();
-                    if (fluid != null) fluid.ooi$ooiInit();
+                    if (fluid != null) fluid.ooi$ooiInit(((FluidStack)fluid).getFluid());
                 });
         list.clear();
         list = null;
@@ -40,9 +40,7 @@ public class MatchFluidHandler {
     }
 
     public static Fluid match(Object obj) {
-        if (!(obj instanceof FluidStack stack))return null;
-        Fluid fluid = stack.getFluid();
-        if (stack.getFluid() == null)return null;
+        if (!(obj instanceof Fluid fluid))return null;
         return fluidNameToTargetMap.get(fluid.getName());
     }
 
