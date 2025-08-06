@@ -16,23 +16,30 @@ import static com.circulation.only_one_item.handler.MatchItemHandler.finalBlackS
 public class CrtBlackList {
 
     @ZenMethod
-    public static void addMatchItem(IItemStack... stacks){
-        for (IItemStack stack : stacks) {
-            finalBlackSet.add(BlackMatchItem.getInstance(CraftTweakerMC.getItemStack(stack)));
-        }
+    public static void addMatchItem(IItemStack stack){
+        finalBlackSet.add(BlackMatchItem.getInstance(CraftTweakerMC.getItemStack(stack)));
     }
 
     @ZenMethod
-    public static void addMatchItem(IOreDictEntry... oreDictEntry){
-        for (IOreDictEntry iOreDictEntry : oreDictEntry) {
-            finalBlackSet.add(BlackMatchItem.getInstance(Type.OreDict, iOreDictEntry.getName()));
-        }
+    public static void addMatchItem(IOreDictEntry oreDictEntry){
+        finalBlackSet.add(BlackMatchItem.getInstance(Type.OreDict, oreDictEntry.getName()));
     }
 
     @ZenMethod
-    public static void addMatchItem(String... modids){
-        for (String modid : modids) {
-            finalBlackSet.add(BlackMatchItem.getInstance(Type.ModID, modid));
+    public static void addMatchItem(String modid){
+        finalBlackSet.add(BlackMatchItem.getInstance(Type.ModID, modid));
+    }
+
+    @ZenMethod
+    public static void addMatchItem(Object... matchs){
+        for (Object match : matchs) {
+            if (match instanceof IOreDictEntry iOreDictEntry){
+                addMatchItem(iOreDictEntry);
+            } else if (match instanceof IItemStack stack) {
+                addMatchItem(stack);
+            } else if (match instanceof String modid){
+                addMatchItem(modid);
+            }
         }
     }
 }

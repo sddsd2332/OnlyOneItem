@@ -94,7 +94,6 @@ public class MatchItemHandler {
 
         for (Map.Entry<ResourceLocation, IRecipe> s : a.getEntries()) {
             var recipe = s.getValue();
-            if (recipe == null || recipe.getRecipeOutput() == ItemStack.EMPTY) continue;
 
             var rs = new RecipeSignature(recipe);
 
@@ -102,10 +101,25 @@ public class MatchItemHandler {
                     .add(recipe);
         }
 
-        recipes.forEach((r, l) -> {
-            if (l.size() > 1) {
-                l.forEach(i -> a.remove(i.getRegistryName()));
-                recipes0.add(r);
+        recipes.forEach((r, recipe) -> {
+            if (recipe.size() > 1) {
+                boolean empty = false;
+                for (IRecipe iRecipe : recipe) {
+                    if (iRecipe != null) {
+                        a.remove(iRecipe.getRegistryName());
+                    }
+                }
+                if (!r.getOutputSignature().getItemStack(1).isEmpty()) {
+                    recipes0.add(r);
+                }
+            } else {
+                if (r.getOutputSignature().getItemStack(1).isEmpty()) {
+                    for (IRecipe iRecipe : recipe) {
+                        if (iRecipe != null) {
+                            a.remove(iRecipe.getRegistryName());
+                        }
+                    }
+                }
             }
         });
 

@@ -13,6 +13,7 @@ import java.util.Set;
 
 @ZenRegister
 @ZenClass("mods.ooi.ConversionFluid")
+@SuppressWarnings("UnusedReturnValue")
 public class CrtConversionFluidTarget {
 
     public static final List<FluidConversionTarget> list = new ArrayList<>();
@@ -30,9 +31,25 @@ public class CrtConversionFluidTarget {
     }
 
     @ZenMethod
-    public CrtConversionFluidTarget addMatchFluid(ILiquidStack... stacks){
-        for (ILiquidStack stack : stacks) {
-            matchFluids.add(stack.getName());
+    public CrtConversionFluidTarget addMatchFluid(String name){
+        matchFluids.add(name);
+        return this;
+    }
+
+    @ZenMethod
+    public CrtConversionFluidTarget addMatchFluid(ILiquidStack stack){
+        matchFluids.add(stack.getName());
+        return this;
+    }
+
+    @ZenMethod
+    public CrtConversionFluidTarget addMatchFluid(Object... objs){
+        for (Object obj : objs) {
+            if (obj instanceof String name){
+                addMatchFluid(name);
+            } else if (obj instanceof ILiquidStack stack){
+                addMatchFluid(stack);
+            }
         }
         return this;
     }
