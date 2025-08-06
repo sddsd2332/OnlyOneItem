@@ -8,6 +8,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.Optional;
+import net.minecraftforge.registries.IRegistryDelegate;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -27,7 +28,12 @@ public class MatchFluidHandler {
         list.parallelStream()
                 .forEach(ref -> {
                     var fluid = ref.get();
-                    if (fluid != null) fluid.ooi$ooiInit(((FluidStack)fluid).getFluid());
+                    if (fluid != null) {
+                        IRegistryDelegate<Fluid> stack;
+                        if ((stack = fluid.ooi$getFluidDelegate((FluidStack) fluid)) != null){
+                            fluid.ooi$ooiInit(stack.get());
+                        }
+                    }
                 });
         list.clear();
         list = null;
