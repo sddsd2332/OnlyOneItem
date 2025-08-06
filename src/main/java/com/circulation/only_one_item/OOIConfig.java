@@ -34,7 +34,11 @@ public class OOIConfig {
         var config = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
         if (Files.exists(ooiPath)){
-            items.addAll(config.fromJson(new String(Files.readAllBytes(ooiPath)), (new TypeToken<HashSet<ItemConversionTarget>>() {}).getType()));
+            try {
+                items.addAll(config.fromJson(new String(Files.readAllBytes(ooiPath)), (new TypeToken<Set<ItemConversionTarget>>() {}).getType()));
+            } catch (Exception ignored){
+                OnlyOneItem.LOGGER.error("[OOI]The config/ooi_item.json file is incorrect!");
+            }
         } else {
             ClassLoader classLoader = OOIConfig.class.getClassLoader();
 
@@ -46,7 +50,11 @@ public class OOIConfig {
         }
 
         if (Files.exists(ooiFluidPath)){
-            fluids.addAll(config.fromJson(new String(Files.readAllBytes(ooiFluidPath)), (new TypeToken<HashSet<FluidConversionTarget>>() {}).getType()));
+            try {
+                fluids.addAll(config.fromJson(new String(Files.readAllBytes(ooiFluidPath)), (new TypeToken<Set<FluidConversionTarget>>() {}).getType()));
+            } catch (Exception ignored){
+                OnlyOneItem.LOGGER.error("[OOI]The config/ooi_fluid.json file is incorrect!");
+            }
         } else {
             fluids.add(new FluidConversionTarget(FluidRegistry.WATER.getName()).addMatchFluid(FluidRegistry.WATER.getName()));
             Files.write(ooiFluidPath, config.toJson(fluids).getBytes());
@@ -54,13 +62,13 @@ public class OOIConfig {
 
         if (Files.exists(blackPath)){
             try {
-                blackList.addAll(config.fromJson(new String(Files.readAllBytes(blackPath)), (new TypeToken<HashSet<BlackMatchItem>>() {}).getType()));
-            } catch (IOException ignored) {
-
+                blackList.addAll(config.fromJson(new String(Files.readAllBytes(blackPath)), (new TypeToken<Set<BlackMatchItem>>() {}).getType()));
+            } catch (Exception ignored) {
+                OnlyOneItem.LOGGER.error("[OOI]The config/ooi_item_black_list.json file is incorrect!");
             }
         } else {
             blackList.add(BlackMatchItem.getInstance("minecraft:gold_ingot",0));
-            blackList.add(BlackMatchItem.getInstance(Type.OreDict,"ingotGlod"));
+            blackList.add(BlackMatchItem.getInstance(Type.OreDict,"ingotGold"));
             blackList.add(BlackMatchItem.getInstance(Type.ModID,"minecraft"));
             Files.write(blackPath, config.toJson(blackList).getBytes());
         }
