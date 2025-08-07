@@ -209,4 +209,9 @@ public class RecipeSignature {
         return hashCode;
     }
 
+    @Override
+    public String toString(){
+        return outputSignature.toString() + inputSignatures + shaped;
+    }
+
 }

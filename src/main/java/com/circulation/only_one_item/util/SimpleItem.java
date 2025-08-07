@@ -26,6 +26,10 @@ public class SimpleItem {
 
     public static final SimpleItem EMPTY = SimpleItem.getInstance(ItemStack.EMPTY);
 
+    public boolean isEmpty(){
+        return this == EMPTY || Objects.equals(this.item, "minecraft:air");
+    }
+
     private SimpleItem(Item item, int meta, NBTTagCompound nbt) {
         this(item.getRegistryName() == null ? "" : item.getRegistryName().toString(), meta, nbt);
     }

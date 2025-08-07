@@ -37,7 +37,7 @@ public class OOIConfig {
             try {
                 items.addAll(config.fromJson(new String(Files.readAllBytes(ooiPath)), (new TypeToken<Set<ItemConversionTarget>>() {}).getType()));
             } catch (Exception ignored){
-                OnlyOneItem.LOGGER.error("[OOI]The config/ooi_item.json file is incorrect!");
+                OnlyOneItem.LOGGER.error("[OOI]The config/ooi/ooi_item.json file is incorrect!");
             }
         } else {
             ClassLoader classLoader = OOIConfig.class.getClassLoader();
@@ -53,7 +53,7 @@ public class OOIConfig {
             try {
                 fluids.addAll(config.fromJson(new String(Files.readAllBytes(ooiFluidPath)), (new TypeToken<Set<FluidConversionTarget>>() {}).getType()));
             } catch (Exception ignored){
-                OnlyOneItem.LOGGER.error("[OOI]The config/ooi_fluid.json file is incorrect!");
+                OnlyOneItem.LOGGER.error("[OOI]The config/ooi/ooi_fluid.json file is incorrect!");
             }
         } else {
             fluids.add(new FluidConversionTarget(FluidRegistry.WATER.getName()).addMatchFluid(FluidRegistry.WATER.getName()));
@@ -64,7 +64,7 @@ public class OOIConfig {
             try {
                 blackList.addAll(config.fromJson(new String(Files.readAllBytes(blackPath)), (new TypeToken<Set<BlackMatchItem>>() {}).getType()));
             } catch (Exception ignored) {
-                OnlyOneItem.LOGGER.error("[OOI]The config/ooi_item_black_list.json file is incorrect!");
+                OnlyOneItem.LOGGER.error("[OOI]The config/ooi/ooi_item_black_list.json file is incorrect!");
             }
         } else {
             blackList.add(BlackMatchItem.getInstance("minecraft:gold_ingot",0));
