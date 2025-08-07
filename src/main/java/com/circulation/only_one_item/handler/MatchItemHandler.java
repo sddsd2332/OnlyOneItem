@@ -110,9 +110,7 @@ public class MatchItemHandler {
                         a.remove(iRecipe.getRegistryName());
                     }
                 }
-                if (!r.getOutputSignature().getItemStack(1).isEmpty()) {
-                    recipes0.add(r);
-                }
+                recipes0.add(r);
             }
         });
 

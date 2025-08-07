@@ -45,7 +45,7 @@ public abstract class MixinFluidStack implements OOIFluidStack {
 
     @Override
     public void ooi$ooiInit(Fluid fluid){
-        Fluid target = MatchFluidHandler.match(this);
+        Fluid target = MatchFluidHandler.match(fluid);
 
         if (target != null){
             var d = ooi$makeDelegate(target);
