@@ -1,18 +1,16 @@
 package com.circulation.only_one_item.handler;
 
-import com.circulation.only_one_item.OOIConfig;
 import com.circulation.only_one_item.conversion.FluidConversionTarget;
-import com.circulation.only_one_item.crt.CrtConversionFluidTarget;
 import com.circulation.only_one_item.util.OOIFluidStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.registries.IRegistryDelegate;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MatchFluidHandler {
@@ -50,26 +48,14 @@ public class MatchFluidHandler {
         return fluidNameToTargetMap.get(fluid.getName());
     }
 
-    public static void Init() {
-        for (FluidConversionTarget t : OOIConfig.fluids) {
+    public static void Init(List<FluidConversionTarget> fluids) {
+        for (FluidConversionTarget t : fluids) {
             for (String fluid : t.getMatchFluids()) {
                 if (t.getTarget() != null){
                     fluidNameToTargetMap.put(fluid,t.getTarget());
                 }
             }
         }
-        OOIConfig.fluids.clear();
-    }
-
-    @Optional.Method(modid = "crafttweaker")
-    public static void CrtInit(){
-        for (FluidConversionTarget t : CrtConversionFluidTarget.list) {
-            for (String fluid : t.getMatchFluids()) {
-                if (t.getTarget() != null){
-                    fluidNameToTargetMap.put(fluid,t.getTarget());
-                }
-            }
-        }
-        CrtConversionFluidTarget.list.clear();
+        fluids.clear();
     }
 }

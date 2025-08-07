@@ -45,7 +45,7 @@ public class OnlyOneItem {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         MatchItemHandler.InitTarget();
-        MatchFluidHandler.Init();
+        MatchFluidHandler.Init(OOIConfig.fluids);
         if (!Loader.isModLoaded("crafttweaker")) {
             InitHandler.allPreInit();
         }

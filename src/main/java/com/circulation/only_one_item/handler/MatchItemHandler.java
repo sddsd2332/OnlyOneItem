@@ -2,6 +2,7 @@ package com.circulation.only_one_item.handler;
 
 import com.circulation.only_one_item.OOIConfig;
 import com.circulation.only_one_item.conversion.ItemConversionTarget;
+import com.circulation.only_one_item.crt.CrtBlackList;
 import com.circulation.only_one_item.crt.CrtConversionItemTarget;
 import com.circulation.only_one_item.emun.Type;
 import com.circulation.only_one_item.util.*;
@@ -29,7 +30,11 @@ public class MatchItemHandler {
     @SubscribeEvent
     public void onOreRegister(OreDictionary.OreRegisterEvent event) {
         var od = event.getName();
-        if (finalBlackSet.contains(BlackMatchItem.getInstance(Type.OreDict, od))) return;
+        if (finalBlackSet.contains(BlackMatchItem.getInstance(Type.OreDict, od))) {
+            var ore = event.getOre();
+            finalBlackSet.add(BlackMatchItem.getInstance(ore));
+            return;
+        }
         if (odToTargetMap.containsKey(od)) {
             var ore = event.getOre();
             var m = MatchItem.getInstance(ore);
@@ -124,8 +129,8 @@ public class MatchItemHandler {
     }
 
     public static synchronized void InitTarget() {
-        BlackInit();
-        Init();
+        BlackInit(OOIConfig.blackList);
+        Init(OOIConfig.items);
     }
 
     public static synchronized void addPreItemStack(OOIItemStack i) {
@@ -151,8 +156,8 @@ public class MatchItemHandler {
                 .get(meta);
     }
 
-    private static void Init() {
-        for (ItemConversionTarget t : OOIConfig.items) {
+    private static void Init(List<ItemConversionTarget> items) {
+        for (ItemConversionTarget t : items) {
             MatchItemHandler.allTarget.add(SimpleItem.getInstance(t.getTargetID(), t.getTargetMeta(), null));
             for (MatchItem matchItem : t.getMatchItems()) {
                 if (matchItem.oreName() != null) {
@@ -188,11 +193,11 @@ public class MatchItemHandler {
                 }
             }
         }
-        OOIConfig.items.clear();
+        items.clear();
     }
 
-    private static void BlackInit() {
-        for (BlackMatchItem matchItem : OOIConfig.blackList) {
+    private static void BlackInit(Set<BlackMatchItem> blackSet) {
+        for (BlackMatchItem matchItem : blackSet) {
             switch (matchItem.type()) {
                 case Item, ModID -> finalBlackSet.add(matchItem);
                 case OreDict -> {
@@ -203,48 +208,13 @@ public class MatchItemHandler {
                 }
             }
         }
-        OOIConfig.blackList.clear();
+        blackSet.clear();
     }
 
     @Optional.Method(modid = "crafttweaker")
     public static void CrtInit() {
-        for (ItemConversionTarget t : CrtConversionItemTarget.list) {
-            allTarget.add(SimpleItem.getInstance(t.getTargetID(), t.getTargetMeta(), null));
-            for (MatchItem matchItem : t.getMatchItems()) {
-                if (matchItem.oreName() != null) {
-                    var list = OreDictionary.getOres(matchItem.oreName(), false);
-                    list.stream()
-                            .map(MatchItem::getInstance)
-                            .filter(matchItem1 ->
-                                    !allTarget.contains(SimpleItem.getInstance(matchItem1.id(), matchItem1.meta(), null))
-                                            && !(finalBlackSet.contains(BlackMatchItem.getInstance(matchItem1))
-                                            || finalBlackSet.contains(BlackMatchItem.getModIDInstance(matchItem1)))
-                            )
-                            .forEach(m -> itemIdToTargetMap
-                                    .computeIfAbsent(m.id(), k -> new HashMap<>())
-                                    .put(m.meta(), t));
-                    var listC = new ArrayList<>(list);
-                    list.clear();
-                    for (ItemStack stack : listC) {
-                        var matchItem2 = BlackMatchItem.getInstance(stack);
-                        if (finalBlackSet.contains(matchItem2) || finalBlackSet.contains(BlackMatchItem.getModIDInstance(stack))) {
-                            list.add(stack);
-                        }
-                        if (allTarget.contains(SimpleItem.getInstance(matchItem2.name(), matchItem2.meta(), null))) {
-                            list.add(stack);
-                        }
-                    }
-                    odToTargetMap.put(matchItem.oreName(), t);
-                } else if (matchItem.id() != null) {
-                    if (!allTarget.contains(SimpleItem.getInstance(matchItem.id(), matchItem.meta(), null))) {
-                        itemIdToTargetMap
-                                .computeIfAbsent(matchItem.id(), k -> new HashMap<>())
-                                .put(matchItem.meta(), t);
-                    }
-                }
-            }
-        }
-        CrtConversionItemTarget.list.clear();
+        Init(CrtConversionItemTarget.list);
+        BlackInit(CrtBlackList.list);
     }
 
 }

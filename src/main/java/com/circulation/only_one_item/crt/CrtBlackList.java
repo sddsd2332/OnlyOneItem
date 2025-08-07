@@ -9,25 +9,28 @@ import crafttweaker.api.oredict.IOreDictEntry;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
-import static com.circulation.only_one_item.handler.MatchItemHandler.finalBlackSet;
+import java.util.HashSet;
+import java.util.Set;
 
 @ZenRegister
 @ZenClass("mods.ooi.BlackList")
 public class CrtBlackList {
 
+    public static final Set<BlackMatchItem> list = new HashSet<>();
+
     @ZenMethod
     public static void addMatchItem(IItemStack stack){
-        finalBlackSet.add(BlackMatchItem.getInstance(CraftTweakerMC.getItemStack(stack)));
+        list.add(BlackMatchItem.getInstance(CraftTweakerMC.getItemStack(stack)));
     }
 
     @ZenMethod
     public static void addMatchItem(IOreDictEntry oreDictEntry){
-        finalBlackSet.add(BlackMatchItem.getInstance(Type.OreDict, oreDictEntry.getName()));
+        list.add(BlackMatchItem.getInstance(Type.OreDict, oreDictEntry.getName()));
     }
 
     @ZenMethod
     public static void addMatchItem(String modid){
-        finalBlackSet.add(BlackMatchItem.getInstance(Type.ModID, modid));
+        list.add(BlackMatchItem.getInstance(Type.ModID, modid));
     }
 
     @ZenMethod
