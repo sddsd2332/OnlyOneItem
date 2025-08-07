@@ -56,10 +56,9 @@ public class RecipeSignature {
 
         int ii = 0;
         for (Ingredient ingredient : ingredients) {
-            Multiset<SimpleItem> set = HashMultiset.create();
             ItemStack[] matching = ingredient.getMatchingStacks();
             Map<Integer, Integer> map = new HashMap<>();
-            if (isOD(map, signatures, matching, set)) {
+            if (isOD(map, signatures, matching)) {
                 String odName = "";
                 int max = 0;
                 for (Map.Entry<Integer, Integer> integerIntegerEntry : map.entrySet()) {
@@ -71,14 +70,29 @@ public class RecipeSignature {
                         odName = OreDictionary.getOreName(od);
                     }
                 }
-                signatures.add(odName);
-                if (!odName.isEmpty()) {
-                    cleanInputSignatures.add(odName);
-                }
-                if (obs == null) obs = odName;
-                else if (repeat) {
-                    if (!obs.equals(odName)) {
-                        repeat = false;
+                if (odName.isEmpty() || isCorrectOD(matching,odName)) {
+                    signatures.add(odName);
+                    if (!odName.isEmpty()) {
+                        cleanInputSignatures.add(odName);
+                    }
+                    if (obs == null) obs = odName;
+                    else if (repeat) {
+                        if (!obs.equals(odName)) {
+                            repeat = false;
+                        }
+                    }
+                } else {
+                    Multiset<SimpleItem> set = HashMultiset.create();
+                    Arrays.stream(matching)
+                            .map(SimpleItem::getInstance)
+                            .forEach(set::add);
+                    signatures.add(set);
+                    cleanInputSignatures.add(set);
+                    if (obs == null) obs = set;
+                    else if (repeat) {
+                        if (!obs.equals(set)) {
+                            repeat = false;
+                        }
                     }
                 }
             }
@@ -87,10 +101,21 @@ public class RecipeSignature {
         return signatures;
     }
 
-    private boolean isOD(Map<Integer, Integer> map, List<Object> signatures, ItemStack[] matching, Multiset<SimpleItem> set) {
+    private boolean isCorrectOD(ItemStack[] matching,String odName){
+        var od = OreDictionary.getOres(odName);
+        for (ItemStack itemStack : matching) {
+            if (!OreDictionary.containsMatch(true,od,itemStack)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isOD(Map<Integer, Integer> map, List<Object> signatures, ItemStack[] matching) {
         for (ItemStack stack : matching) {
             var ods = stack.isEmpty() ? new int[0] : OreDictionary.getOreIDs(stack);
             if (ods.length == 0) {
+                Multiset<SimpleItem> set = HashMultiset.create();
                 Arrays.stream(matching)
                         .map(SimpleItem::getInstance)
                         .forEach(set::add);
@@ -105,7 +130,7 @@ public class RecipeSignature {
                 return false;
             }
             for (int oreID : ods) {
-                map.put(oreID, map.getOrDefault(oreID, 1));
+                map.put(oreID, map.getOrDefault(oreID, 0) + 1);
             }
         }
         return true;

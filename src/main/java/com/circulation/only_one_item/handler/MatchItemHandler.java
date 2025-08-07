@@ -5,6 +5,7 @@ import com.circulation.only_one_item.conversion.ItemConversionTarget;
 import com.circulation.only_one_item.crt.CrtBlackList;
 import com.circulation.only_one_item.crt.CrtConversionItemTarget;
 import com.circulation.only_one_item.emun.Type;
+import com.circulation.only_one_item.mixin.mc.AccessorFurnaceRecipes;
 import com.circulation.only_one_item.util.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
@@ -70,7 +71,7 @@ public class MatchItemHandler {
         var sl = FurnaceRecipes.instance().getSmeltingList();
         var slc = new HashMap<>(sl);
 
-        var el = FurnaceRecipes.instance().experienceList;
+        var el = ((AccessorFurnaceRecipes)FurnaceRecipes.instance()).ooi$getExperienceList();
         var elc = new HashMap<>(el);
 
         sl.clear();
