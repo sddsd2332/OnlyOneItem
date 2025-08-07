@@ -1,7 +1,7 @@
 # Only One Item (1.12)
 
 Requires mixinbooter version 8.0 or higher
-**Not compatible with UniDict**
+There may be some minor errors when using UniDicty together
 
 1. [简体中文](#简体中文)
 2. [English](#English)
@@ -10,7 +10,7 @@ Requires mixinbooter version 8.0 or higher
 这个mod本身是受到[OneEnoughItem](https://github.com/Tower-of-Sighs/OneEnoughItem)启发而开发的。
 这并不是它的分支，也没有使用它的任何代码。
 
-实质上，这个mod的目的是成为[UniDict](https://github.com/WanionCane/UniDict)的一个更好的替代品，
+实质上，这个mod的目的是成为[UniDict](https://github.com/WanionCane/UniDict)的一个替代品，
 用于解决modpack内重复物品过多的问题（我自己的modpack内有足足6种铜矿石！太过分了！）
 
 这些物品在功能上完全重复，却使用不同的获取方法，甚至可能用途本该一样但是无法通用。
@@ -86,9 +86,36 @@ import mods.ooi.BlackList;
 
 BlackList.addMatchItem("chisel");
 
-ConversionFluid.create(<liquid:starmetal>)
-    .addMatchFluid(<liquid:astral_starmetal>)
-    .register();
+static modid as string[] = [
+    "minecraft",
+    "thermalfoundation",
+    "enderio",
+    "tconstruct"
+    "ic2",
+    "mets",
+    "taiga",
+];
+function getODItem(od as IOreDictEntry) as IItemStack{
+    if (isNull(od.firstItem))return <minecraft:stone>;
+    var clq as IItemStack = null;
+    for i in 0 to modid.length{
+        for item in od.items{
+            if (item.definition.owner == modid[i]){
+                clq = item;
+                break;
+            }
+        }
+        if (!isNull(clq))break;
+    }
+
+    return isNull(clq) ? od.firstItem : clq;
+};
+
+if (!(<ore:itemSilicon>.empty)){
+    ConversionItem.create(getODItem(<ore:itemSilicon>))
+            .addMatchItem(<ore:itemSilicon>)
+            .register();
+}
 
 for od in oreDict.entries {
     var odName = od.name;
@@ -101,20 +128,20 @@ for od in oreDict.entries {
         || odName.startsWith("gear")
         || odName.startsWith("stick")
     ){
-        ConversionItem.create(od.firstItem)
+        ConversionItem.create(getODItem(od))
             .addMatchItem(od)
             .register();
         if (odName.startsWith("gem")){
             val od0 = oreDict.get("block" + odName.substring("gem".length));
             if (!od0.empty){
-                ConversionItem.create(od0.firstItem)
+                ConversionItem.create(getODItem(od0))
                     .addMatchItem(od0)
                     .register();
             }
         } else if (odName.startsWith("ingot")){
             val od0 = oreDict.get("block" + odName.substring("ingot".length));
             if (!od0.empty){
-                ConversionItem.create(od0.firstItem)
+                ConversionItem.create(getODItem(od0))
                     .addMatchItem(od0)
                     .register();
             }
@@ -138,7 +165,7 @@ This mod was inspired by OneEnoughItem.
 
 It is not a fork and does not use any code from that project.
 
-Its core purpose is to serve as a better alternative to UniDict for resolving excessive item duplication in modpacks. (My own pack has 6 different copper ores! It’s insane!)
+Its core purpose is to serve as an alternative to UniDict for resolving excessive item duplication in modpacks. (My own pack has 6 different copper ores! It’s insane!)
 
 These items are functionally identical but use different registries, causing recipes and storage systems to treat them as distinct items (e.g., incompatible crafting, separate storage).
 
@@ -216,9 +243,36 @@ import mods.ooi.BlackList;
 
 BlackList.addMatchItem("chisel");
 
-ConversionFluid.create(<liquid:starmetal>)
-    .addMatchFluid(<liquid:astral_starmetal>)
-    .register();
+static modid as string[] = [
+    "minecraft",
+    "thermalfoundation",
+    "enderio",
+    "tconstruct"
+    "ic2",
+    "mets",
+    "taiga",
+];
+function getODItem(od as IOreDictEntry) as IItemStack{
+    if (isNull(od.firstItem))return <minecraft:stone>;
+    var clq as IItemStack = null;
+    for i in 0 to modid.length{
+        for item in od.items{
+            if (item.definition.owner == modid[i]){
+                clq = item;
+                break;
+            }
+        }
+        if (!isNull(clq))break;
+    }
+
+    return isNull(clq) ? od.firstItem : clq;
+};
+
+if (!(<ore:itemSilicon>.empty)){
+    ConversionItem.create(getODItem(<ore:itemSilicon>))
+            .addMatchItem(<ore:itemSilicon>)
+            .register();
+}
 
 for od in oreDict.entries {
     var odName = od.name;
@@ -231,20 +285,20 @@ for od in oreDict.entries {
         || odName.startsWith("gear")
         || odName.startsWith("stick")
     ){
-        ConversionItem.create(od.firstItem)
+        ConversionItem.create(getODItem(od))
             .addMatchItem(od)
             .register();
         if (odName.startsWith("gem")){
             val od0 = oreDict.get("block" + odName.substring("gem".length));
             if (!od0.empty){
-                ConversionItem.create(od0.firstItem)
+                ConversionItem.create(getODItem(od0))
                     .addMatchItem(od0)
                     .register();
             }
         } else if (odName.startsWith("ingot")){
             val od0 = oreDict.get("block" + odName.substring("ingot".length));
             if (!od0.empty){
-                ConversionItem.create(od0.firstItem)
+                ConversionItem.create(getODItem(od0))
                     .addMatchItem(od0)
                     .register();
             }
