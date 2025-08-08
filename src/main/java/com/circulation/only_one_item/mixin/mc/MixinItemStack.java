@@ -53,7 +53,7 @@ public abstract class MixinItemStack implements OOIItemStack {
 
     @Override
     public void ooi$ooiInit(){
-        ItemConversionTarget target = MatchItemHandler.match(this);
+        ItemConversionTarget target = MatchItemHandler.match(item,itemDamage);
 
         if (target != null){
             item = target.getTarget();

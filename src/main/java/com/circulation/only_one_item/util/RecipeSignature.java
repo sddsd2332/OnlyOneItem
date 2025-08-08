@@ -9,6 +9,7 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.IShapedRecipe;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.OreIngredient;
@@ -206,9 +207,10 @@ public class RecipeSignature {
     }
 
     private String getRecipeName(ItemStack stack) {
+        ResourceLocation rl;
         return (shaped ? "shaped" : "shapeless")
                 + "-"
-                + BlackMatchItem.getModIDInstance(stack).name()
+                + ((rl = stack.getItem().getRegistryName()) == null ? "" : rl.getNamespace())
                 + "-"
                 + hashCode;
     }
