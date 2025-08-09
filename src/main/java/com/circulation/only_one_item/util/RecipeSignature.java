@@ -1,6 +1,7 @@
 package com.circulation.only_one_item.util;
 
 import com.circulation.only_one_item.OnlyOneItem;
+import com.circulation.only_one_item.handler.MatchItemHandler;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import net.minecraft.item.ItemStack;
@@ -28,25 +29,29 @@ public class RecipeSignature {
     private final int hashCode;
     private final int height;
     private final int width;
+    private boolean isModify;
     private static final ForgeRegistry<IRecipe> fr = RegistryManager.ACTIVE.getRegistry(GameData.RECIPES);
 
     Object obs;
     boolean repeat = true;
+
+    public boolean isModify() {
+        return isModify;
+    }
 
     public RecipeSignature(IRecipe recipe) {
         this.outputSignature = SimpleItem.getInstance(recipe.getRecipeOutput());
         this.outputAmount = recipe.getRecipeOutput().getCount();
         this.inputSignatures = createInputSignatures(recipe);
         this.shaped = cleanInputSignatures.size() != 1 && recipe instanceof IShapedRecipe && !(repeat && cleanInputSignatures.size() == 9);
-        this.hashCode = shaped ?
-                Objects.hash(outputSignature, outputAmount, inputSignatures)
-                : Objects.hash(outputSignature, outputAmount, cleanInputSignatures);
         if (shaped) {
             height = ((IShapedRecipe) recipe).getRecipeHeight();
             width = ((IShapedRecipe) recipe).getRecipeWidth();
+            this.hashCode = Objects.hash(outputSignature, outputAmount, inputSignatures);
         } else {
             height = 0;
             width = 0;
+            this.hashCode = Objects.hash(outputSignature, outputAmount, cleanInputSignatures);
         }
         obs = null;
     }
@@ -76,6 +81,7 @@ public class RecipeSignature {
                     if (!odName.isEmpty()) {
                         cleanInputSignatures.add(odName);
                     }
+                    if (!this.isModify) this.isModify = MatchItemHandler.isModify(odName);
                     if (obs == null) obs = odName;
                     else if (repeat) {
                         if (!obs.equals(odName)) {
@@ -89,6 +95,7 @@ public class RecipeSignature {
                             .forEach(set::add);
                     signatures.add(set);
                     cleanInputSignatures.add(set);
+                    if (!this.isModify) this.isModify = MatchItemHandler.isModify(set);
                     if (obs == null) obs = set;
                     else if (repeat) {
                         if (!obs.equals(set)) {

@@ -6,6 +6,7 @@ import com.circulation.only_one_item.crt.CrtBlackList;
 import com.circulation.only_one_item.crt.CrtConversionItemTarget;
 import com.circulation.only_one_item.mixin.mc.AccessorFurnaceRecipes;
 import com.circulation.only_one_item.util.*;
+import com.google.common.collect.Multiset;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
@@ -17,7 +18,6 @@ import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.RegistryManager;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 
 public class MatchItemHandler {
@@ -63,7 +63,7 @@ public class MatchItemHandler {
     private static final HashSet<String> finalMODIDBlackSet = new HashSet<>();
     private static final HashSet<SimpleItem> allTarget = new HashSet<>();
 
-    private static ArrayList<WeakReference<OOIItemStack>> list = new ArrayList<>();
+    private static ArrayList<OOIItemStack> list = new ArrayList<>();
 
     public static void preItemStackInit() {
         odToTargetMap.keySet().forEach(od -> {
@@ -88,14 +88,9 @@ public class MatchItemHandler {
         if (list == null)
             throw new RuntimeException("[OOI] Initialization should not be performed multiple times");
         ((OOIItemStack) (Object) ItemStack.EMPTY).ooi$init();
-        list.parallelStream()
-                .forEach(ref -> {
-                    var item = ref.get();
-                    if (item != null) item.ooi$ooiInit();
-                });
-        list.clear();
-        allTarget.clear();
 
+        list.parallelStream().forEach(OOIItemStack::ooi$ooiInit);
+        list.clear();
         list = null;
 
         var sl = FurnaceRecipes.instance().getSmeltingList();
@@ -123,6 +118,24 @@ public class MatchItemHandler {
         el.putAll(elc);
     }
 
+    public static boolean isModify(Object obj){
+        if (obj instanceof String odName){
+            return odToTargetMap.containsKey(odName);
+        } else if (obj instanceof Multiset<?> set) {
+            for (Object o : set) {
+                if (o instanceof SimpleItem item) {
+                    Item ii;
+                    if ((itemIdToTargetMap.containsKey(ii = item.getItem())
+                            && itemIdToTargetMap.get(ii).containsKey(item.getMeta()))
+                            || allTarget.contains(item)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static void clearRecipe() {
         Map<RecipeSignature, List<IRecipe>> recipes = new HashMap<>();
         Set<RecipeSignature> recipes0 = new HashSet<>();
@@ -133,10 +146,12 @@ public class MatchItemHandler {
             if (recipe.isDynamic())continue;
 
             var rs = new RecipeSignature(recipe);
-            if (rs.getOutputSignature().isEmpty())continue;
+            if (rs.getOutputSignature().isEmpty() || !rs.isModify())continue;
             recipes.computeIfAbsent(rs, v -> new ArrayList<>())
                     .add(recipe);
         }
+
+        allTarget.clear();
 
         recipes.forEach((r, recipe) -> {
             if (recipe.size() > 1) {
@@ -169,7 +184,7 @@ public class MatchItemHandler {
     public static synchronized void addPreItemStack(OOIItemStack i) {
         if (list == null)
             throw new RuntimeException("[OOI] It should not be added again after initialization");
-        list.add(new WeakReference<>(i));
+        list.add(i);
     }
 
     public static ItemConversionTarget match(Item item,int meta) {
@@ -188,7 +203,7 @@ public class MatchItemHandler {
 
     private static void Init(List<ItemConversionTarget> items) {
         for (ItemConversionTarget t : items) {
-            MatchItemHandler.allTarget.add(SimpleItem.getInstance(t.getTargetID(), t.getTargetMeta(), null));
+            allTarget.add(SimpleItem.getInstance(t.getTargetID(), t.getTargetMeta(), null));
             for (MatchItem matchItem : t.getMatchItems()) {
                 if (matchItem.oreName() != null) {
                     var list = OreDictionary.getOres(matchItem.oreName(), false);

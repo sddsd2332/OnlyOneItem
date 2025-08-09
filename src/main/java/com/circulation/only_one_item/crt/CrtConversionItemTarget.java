@@ -34,7 +34,7 @@ public class CrtConversionItemTarget {
     public static CrtConversionItemTarget create(IItemStack target){
         if (target == null) {
             var i = SimpleItem.getInstance(ItemStack.EMPTY);
-            return new CrtConversionItemTarget(i.getItem(),i.getMeta());
+            return new CrtConversionItemTarget(i.getItemID(),i.getMeta());
         }
         return new CrtConversionItemTarget(target.getDefinition().getId(), target.getMetadata());
     }

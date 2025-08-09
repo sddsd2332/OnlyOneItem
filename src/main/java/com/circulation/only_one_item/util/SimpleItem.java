@@ -12,18 +12,6 @@ public class SimpleItem {
     private final int meta;
     private final NBTTagCompound nbt;
 
-    public String getItem() {
-        return item;
-    }
-
-    public int getMeta() {
-        return meta;
-    }
-
-    public NBTTagCompound getNbt() {
-        return nbt;
-    }
-
     public static final SimpleItem EMPTY = SimpleItem.getInstance(ItemStack.EMPTY);
 
     public boolean isEmpty(){
@@ -46,6 +34,22 @@ public class SimpleItem {
 
     public static SimpleItem getInstance(ItemStack stack) {
         return new SimpleItem(stack.getItem(), stack.getMetadata(), stack.getTagCompound());
+    }
+
+    public Item getItem(){
+        return Item.getByNameOrId(item);
+    }
+
+    public String getItemID() {
+        return item;
+    }
+
+    public int getMeta() {
+        return meta;
+    }
+
+    public NBTTagCompound getNbt() {
+        return nbt;
     }
 
     public ItemStack getItemStack(int amount) {
