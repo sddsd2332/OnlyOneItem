@@ -90,10 +90,10 @@ static modid as string[] = [
     "minecraft",
     "thermalfoundation",
     "enderio",
-    "tconstruct"
+    "tconstruct",
     "ic2",
     "mets",
-    "taiga",
+    "taiga"
 ];
 function getODItem(od as IOreDictEntry) as IItemStack{
     if (isNull(od.firstItem))return <minecraft:stone>;
@@ -247,10 +247,10 @@ static modid as string[] = [
     "minecraft",
     "thermalfoundation",
     "enderio",
-    "tconstruct"
+    "tconstruct",
     "ic2",
     "mets",
-    "taiga",
+    "taiga"
 ];
 function getODItem(od as IOreDictEntry) as IItemStack{
     if (isNull(od.firstItem))return <minecraft:stone>;

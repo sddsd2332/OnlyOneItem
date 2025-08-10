@@ -129,6 +129,7 @@ public class RecipeSignature {
                         .forEach(set::add);
                 signatures.add(set);
                 cleanInputSignatures.add(set);
+                if (!this.isModify) this.isModify = MatchItemHandler.isModify(set);
                 if (obs == null) obs = set;
                 else if (repeat) {
                     if (!obs.equals(set)) {

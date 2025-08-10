@@ -118,19 +118,17 @@ public class MatchItemHandler {
         el.putAll(elc);
     }
 
-    public static boolean isModify(Object obj){
-        if (obj instanceof String odName){
-            return odToTargetMap.containsKey(odName);
-        } else if (obj instanceof Multiset<?> set) {
-            for (Object o : set) {
-                if (o instanceof SimpleItem item) {
-                    Item ii;
-                    if ((itemIdToTargetMap.containsKey(ii = item.getItem())
-                            && itemIdToTargetMap.get(ii).containsKey(item.getMeta()))
-                            || allTarget.contains(item)) {
-                        return true;
-                    }
-                }
+    public static boolean isModify(String odName){
+        return odToTargetMap.containsKey(odName);
+    }
+
+    public static boolean isModify(Multiset<SimpleItem> set){
+        for (SimpleItem item : set) {
+            Item ii;
+            if ((itemIdToTargetMap.containsKey(ii = item.getItem())
+                    && itemIdToTargetMap.get(ii).containsKey(item.getMeta()))
+                    || allTarget.contains(item)) {
+                return true;
             }
         }
         return false;
