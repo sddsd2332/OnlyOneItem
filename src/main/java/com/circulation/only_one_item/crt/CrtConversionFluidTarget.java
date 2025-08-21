@@ -3,11 +3,11 @@ package com.circulation.only_one_item.crt;
 import com.circulation.only_one_item.conversion.FluidConversionTarget;
 import crafttweaker.annotations.ZenRegister;
 import crafttweaker.api.liquid.ILiquidStack;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,9 +16,9 @@ import java.util.Set;
 @SuppressWarnings("UnusedReturnValue")
 public class CrtConversionFluidTarget {
 
-    public static final List<FluidConversionTarget> list = new ArrayList<>();
+    public static final List<FluidConversionTarget> list = new ObjectArrayList<>();
 
-    private final Set<String> matchFluids = new HashSet<>();
+    private final Set<String> matchFluids = new ObjectOpenHashSet<>();
     private final String targetID;
 
     public CrtConversionFluidTarget(String id){

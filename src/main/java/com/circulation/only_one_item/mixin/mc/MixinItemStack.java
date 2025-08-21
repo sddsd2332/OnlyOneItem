@@ -3,6 +3,7 @@ package com.circulation.only_one_item.mixin.mc;
 import com.circulation.only_one_item.conversion.ItemConversionTarget;
 import com.circulation.only_one_item.handler.MatchItemHandler;
 import com.circulation.only_one_item.util.OOIItemStack;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -34,8 +35,14 @@ public abstract class MixinItemStack implements OOIItemStack {
     @Shadow
     public abstract boolean isEmpty();
 
+    @Shadow
+    public abstract void setCount(int size);
+
     @Unique
     private static boolean ooi$init = false;
+
+    @Unique
+    private boolean ooi$isBeReplaced = false;
 
     @Inject(method = "forgeInit",at = @At("TAIL"),remap = false)
     private void forgeInit(CallbackInfo ci) {
@@ -46,19 +53,32 @@ public abstract class MixinItemStack implements OOIItemStack {
         }
     }
 
+    @Unique
+    @Override
+    public boolean ooi$isBeReplaced(){
+        return ooi$isBeReplaced;
+    }
+
+    @Unique
     @Override
     public void ooi$init(){
         ooi$init = true;
     }
 
+    @Unique
     @Override
     public void ooi$ooiInit(){
         ItemConversionTarget target = MatchItemHandler.match(item,itemDamage);
 
         if (target != null){
             item = target.getTarget();
-            delegate = item.delegate;
-            itemDamage = target.getTargetMeta();
+            ooi$isBeReplaced = true;
+            if (item != Items.AIR) {
+                delegate = item.delegate;
+                itemDamage = target.getTargetMeta();
+            } else {
+                this.setCount(0);
+            }
         }
     }
 

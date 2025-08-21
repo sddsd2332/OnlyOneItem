@@ -5,4 +5,6 @@ public interface OOIItemStack {
     void ooi$init();
 
     void ooi$ooiInit();
+
+    boolean ooi$isBeReplaced();
 }

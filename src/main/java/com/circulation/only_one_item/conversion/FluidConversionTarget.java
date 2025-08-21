@@ -1,11 +1,11 @@
 package com.circulation.only_one_item.conversion;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 public final class FluidConversionTarget {
@@ -25,7 +25,7 @@ public final class FluidConversionTarget {
 
     public FluidConversionTarget addMatchFluid(String... stacks){
         if (matchFluids == null){
-            matchFluids = new HashSet<>();
+            matchFluids = new ObjectOpenHashSet<>();
         }
         matchFluids.addAll(Arrays.asList(stacks));
         return this;
@@ -33,7 +33,7 @@ public final class FluidConversionTarget {
 
     public FluidConversionTarget addMatchFluid(FluidStack... stacks){
         if (matchFluids == null){
-            matchFluids = new HashSet<>();
+            matchFluids = new ObjectOpenHashSet<>();
         }
         for (FluidStack stack : stacks) {
             matchFluids.add(stack.getFluid().getName());

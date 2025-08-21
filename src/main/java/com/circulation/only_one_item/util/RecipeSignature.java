@@ -4,6 +4,8 @@ import com.circulation.only_one_item.OnlyOneItem;
 import com.circulation.only_one_item.handler.MatchItemHandler;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
@@ -18,7 +20,11 @@ import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.RegistryManager;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class RecipeSignature {
     private final SimpleItem outputSignature;
@@ -58,12 +64,12 @@ public class RecipeSignature {
 
     private List<Object> createInputSignatures(IRecipe recipe) {
         List<Ingredient> ingredients = recipe.getIngredients();
-        List<Object> signatures = new ArrayList<>();
+        List<Object> signatures = new ObjectArrayList<>();
 
         int ii = 0;
         for (Ingredient ingredient : ingredients) {
             ItemStack[] matching = ingredient.getMatchingStacks();
-            Map<Integer, Integer> map = new HashMap<>();
+            Map<Integer, Integer> map = new Object2ObjectOpenHashMap<>();
             if (isOD(map, signatures, matching)) {
                 String odName = "";
                 int max = 0;

@@ -1,12 +1,21 @@
 package com.circulation.only_one_item.handler;
 
 import com.circulation.only_one_item.OOIConfig;
+import com.circulation.only_one_item.OnlyOneItem;
 import com.circulation.only_one_item.conversion.ItemConversionTarget;
 import com.circulation.only_one_item.crt.CrtBlackList;
 import com.circulation.only_one_item.crt.CrtConversionItemTarget;
 import com.circulation.only_one_item.mixin.mc.AccessorFurnaceRecipes;
-import com.circulation.only_one_item.util.*;
+import com.circulation.only_one_item.util.BlackMatchItem;
+import com.circulation.only_one_item.util.MatchItem;
+import com.circulation.only_one_item.util.OOIItemStack;
+import com.circulation.only_one_item.util.RecipeSignature;
+import com.circulation.only_one_item.util.SimpleItem;
 import com.google.common.collect.Multiset;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
@@ -18,8 +27,12 @@ import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.RegistryManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+@SuppressWarnings("unused")
 public class MatchItemHandler {
 
     public static MatchItemHandler INSTANCE = new MatchItemHandler();
@@ -34,7 +47,7 @@ public class MatchItemHandler {
         var ore = event.getOre();
         if (finalODBlackSet.contains(od)) {
             finalItemBlackMap
-                    .computeIfAbsent(ore.getItem(),item -> new HashSet<>())
+                    .computeIfAbsent(ore.getItem(),item -> new ObjectOpenHashSet<>())
                     .add(ore.getMetadata());
             return;
         }
@@ -42,26 +55,31 @@ public class MatchItemHandler {
         if (rl != null){
             if (finalMODIDBlackSet.contains(rl.getNamespace())){
                 finalItemBlackMap
-                        .computeIfAbsent(ore.getItem(),item -> new HashSet<>())
+                        .computeIfAbsent(ore.getItem(),item -> new ObjectOpenHashSet<>())
                         .add(ore.getMetadata());
                 return;
             }
         }
         if (odToTargetMap.containsKey(od)) {
             itemIdToTargetMap
-                    .computeIfAbsent(ore.getItem(), k -> new HashMap<>())
+                    .computeIfAbsent(ore.getItem(), k -> new Int2ObjectOpenHashMap<>())
                     .put(ore.getMetadata(), odToTargetMap.get(od));
             OreDictionary.getOres(od).remove(ore);
             ((OOIItemStack) (Object) ore).ooi$ooiInit();
         }
+        if (init){
+            OnlyOneItem.LOGGER.info("这不对吧？");
+        }
     }
 
-    private static final HashMap<Item, Map<Integer, ItemConversionTarget>> itemIdToTargetMap = new HashMap<>();
-    private static final HashMap<String, ItemConversionTarget> odToTargetMap = new HashMap<>();
-    private static final HashMap<Item,HashSet<Integer>> finalItemBlackMap = new HashMap<>();
-    private static final HashSet<String> finalODBlackSet = new HashSet<>();
-    private static final HashSet<String> finalMODIDBlackSet = new HashSet<>();
-    private static final HashSet<SimpleItem> allTarget = new HashSet<>();
+    static boolean init = false;
+
+    private static final Map<Item, Int2ObjectOpenHashMap<ItemConversionTarget>> itemIdToTargetMap = new Object2ObjectOpenHashMap<>();
+    private static final Map<String, ItemConversionTarget> odToTargetMap = new Object2ObjectOpenHashMap<>();
+    private static final Map<Item,Set<Integer>> finalItemBlackMap = new Object2ObjectOpenHashMap<>();
+    private static final Set<String> finalODBlackSet = new ObjectOpenHashSet<>();
+    private static final Set<String> finalMODIDBlackSet = new ObjectOpenHashSet<>();
+    private static final Set<SimpleItem> allTarget = new ObjectOpenHashSet<>();
 
     private static ArrayList<OOIItemStack> list = new ArrayList<>();
 
@@ -94,15 +112,15 @@ public class MatchItemHandler {
         list = null;
 
         var sl = FurnaceRecipes.instance().getSmeltingList();
-        var slc = new HashMap<>(sl);
+        var slc = new Object2ObjectOpenHashMap<>(sl);
 
         var el = ((AccessorFurnaceRecipes)FurnaceRecipes.instance()).ooi$getExperienceList();
-        var elc = new HashMap<>(el);
+        var elc = new Object2ObjectOpenHashMap<>(el);
 
         sl.clear();
         el.clear();
 
-        Map<SimpleItem, ItemStack> uniqueKeys = new HashMap<>(sl.size());
+        Map<SimpleItem, ItemStack> uniqueKeys = new Object2ObjectOpenHashMap<>(sl.size());
 
         for (Map.Entry<ItemStack, ItemStack> stack : slc.entrySet()) {
             ItemStack key = stack.getKey();
@@ -135,17 +153,25 @@ public class MatchItemHandler {
     }
 
     public static void clearRecipe() {
-        Map<RecipeSignature, List<IRecipe>> recipes = new HashMap<>();
-        Set<RecipeSignature> recipes0 = new HashSet<>();
+        Map<RecipeSignature, List<IRecipe>> recipes = new Object2ObjectOpenHashMap<>();
+        Set<RecipeSignature> recipes0 = new ObjectOpenHashSet<>();
+        List<ResourceLocation> cleanRecipes = new ObjectArrayList<>();
         final var a = RegistryManager.ACTIVE.<IRecipe>getRegistry(GameData.RECIPES);
 
         for (Map.Entry<ResourceLocation, IRecipe> s : a.getEntries()) {
             var recipe = s.getValue();
+
+            if (((OOIItemStack)(Object)recipe.getRecipeOutput()).ooi$isBeReplaced() && recipe.getRecipeOutput().isEmpty()){
+                cleanRecipes.add(recipe.getRegistryName());
+                continue;
+            }
+
             if (recipe.isDynamic())continue;
 
             var rs = new RecipeSignature(recipe);
             if (rs.getOutputSignature().isEmpty() || !rs.isModify())continue;
-            recipes.computeIfAbsent(rs, v -> new ArrayList<>())
+
+            recipes.computeIfAbsent(rs, v -> new ObjectArrayList<>())
                     .add(recipe);
         }
 
@@ -164,7 +190,12 @@ public class MatchItemHandler {
         });
 
         recipes.clear();
+        cleanRecipes.forEach(a::remove);
+        cleanRecipes.clear();
         recipes0.forEach(RecipeSignature::rebuildRecipe);
+        recipes0.clear();
+        OnlyOneItem.LOGGER.info("配方清理结束");
+        init = true;
     }
 
     public static synchronized void Clear() {
@@ -185,6 +216,8 @@ public class MatchItemHandler {
         list.add(i);
     }
 
+    private static final Int2ObjectOpenHashMap<ItemConversionTarget> defaultMap = new Int2ObjectOpenHashMap<>(0);
+
     public static ItemConversionTarget match(Item item,int meta) {
         if (item == null)return null;
         ResourceLocation rl = item.getRegistryName();
@@ -195,7 +228,7 @@ public class MatchItemHandler {
         }
 
         return itemIdToTargetMap
-                .getOrDefault(item, Collections.emptyMap())
+                .getOrDefault(item, defaultMap)
                 .get(meta);
     }
 
@@ -221,7 +254,7 @@ public class MatchItemHandler {
                                 int meta = stack.getMetadata();
                                 if (rl != null) {
                                     itemIdToTargetMap
-                                            .computeIfAbsent(item, k -> new HashMap<>())
+                                            .computeIfAbsent(item, k -> new Int2ObjectOpenHashMap<>())
                                             .put(meta, t);
                                 }
                             });
@@ -229,7 +262,7 @@ public class MatchItemHandler {
                 } else if (matchItem.id() != null) {
                     if (!allTarget.contains(SimpleItem.getInstance(matchItem.id(), matchItem.meta(), null))) {
                         itemIdToTargetMap
-                                .computeIfAbsent(Item.getByNameOrId(matchItem.id()), k -> new HashMap<>())
+                                .computeIfAbsent(Item.getByNameOrId(matchItem.id()), k -> new Int2ObjectOpenHashMap<>())
                                 .put(matchItem.meta(), t);
                     }
                 }
@@ -242,7 +275,7 @@ public class MatchItemHandler {
         for (BlackMatchItem matchItem : blackSet) {
             switch (matchItem.type()) {
                 case Item -> finalItemBlackMap
-                        .computeIfAbsent(Item.getByNameOrId(matchItem.name()),k -> new HashSet<>())
+                        .computeIfAbsent(Item.getByNameOrId(matchItem.name()),k -> new ObjectOpenHashSet<>())
                         .add(matchItem.meta());
                 case ModID -> finalMODIDBlackSet.add(matchItem.name());
                 case OreDict -> {
@@ -254,7 +287,7 @@ public class MatchItemHandler {
                                 int meta = stack.getMetadata();
                                 if (rl != null) {
                                     finalItemBlackMap
-                                            .computeIfAbsent(item, k -> new HashSet<>())
+                                            .computeIfAbsent(item, k -> new ObjectOpenHashSet<>())
                                             .add(meta);
                                 }
                             });

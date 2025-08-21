@@ -6,17 +6,17 @@ import crafttweaker.annotations.ZenRegister;
 import crafttweaker.api.item.IItemStack;
 import crafttweaker.api.minecraft.CraftTweakerMC;
 import crafttweaker.api.oredict.IOreDictEntry;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @ZenRegister
 @ZenClass("mods.ooi.BlackList")
 public class CrtBlackList {
 
-    public static final Set<BlackMatchItem> list = new HashSet<>();
+    public static final Set<BlackMatchItem> list = new ObjectOpenHashSet<>();
 
     @ZenMethod
     public static void addMatchItem(IItemStack stack){

@@ -7,20 +7,23 @@ import crafttweaker.annotations.ZenRegister;
 import crafttweaker.api.item.IItemStack;
 import crafttweaker.api.minecraft.CraftTweakerMC;
 import crafttweaker.api.oredict.IOreDictEntry;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.ItemStack;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 @ZenRegister
 @ZenClass("mods.ooi.ConversionItem")
 @SuppressWarnings("UnusedReturnValue")
 public class CrtConversionItemTarget {
 
-    public static final List<ItemConversionTarget> list = new ArrayList<>();
+    public static final List<ItemConversionTarget> list = new ObjectArrayList<>();
 
-    private final Set<MatchItem> matchItems = new HashSet<>();
+    private final Set<MatchItem> matchItems = new ObjectOpenHashSet<>();
 
     private final String targetID;
     private final int targetMeta;

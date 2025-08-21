@@ -6,22 +6,22 @@ import com.circulation.only_one_item.emun.Type;
 import com.circulation.only_one_item.util.BlackMatchItem;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Loader;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class OOIConfig {
 
-    public static final List<ItemConversionTarget> items = new ArrayList<>();
-    public static final List<FluidConversionTarget> fluids = new ArrayList<>();
-    public static final Set<BlackMatchItem> blackList = new HashSet<>();
+    public static final List<ItemConversionTarget> items = new ObjectArrayList<>();
+    public static final List<FluidConversionTarget> fluids = new ObjectArrayList<>();
+    public static final Set<BlackMatchItem> blackList = new ObjectOpenHashSet<>();
 
     public static void readConfig() throws IOException {
         var configPath = Loader.instance().getConfigDir().toPath().resolve("ooi");

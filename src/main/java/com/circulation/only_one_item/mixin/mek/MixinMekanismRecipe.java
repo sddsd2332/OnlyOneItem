@@ -26,4 +26,10 @@ public abstract class MixinMekanismRecipe<INPUT extends MachineInput<INPUT>, OUT
         recipes.clear();
         recipes.putAll(map);
     }
+
+    @Unique
+    @Override
+    public void ooi$clear(){
+        this.recipes.clear();
+    }
 }
