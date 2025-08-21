@@ -1,7 +1,6 @@
 package com.circulation.only_one_item.handler;
 
 import com.circulation.only_one_item.OOIConfig;
-import com.circulation.only_one_item.OnlyOneItem;
 import com.circulation.only_one_item.conversion.ItemConversionTarget;
 import com.circulation.only_one_item.crt.CrtBlackList;
 import com.circulation.only_one_item.crt.CrtConversionItemTarget;
@@ -67,12 +66,7 @@ public class MatchItemHandler {
             OreDictionary.getOres(od).remove(ore);
             ((OOIItemStack) (Object) ore).ooi$ooiInit();
         }
-        if (init){
-            OnlyOneItem.LOGGER.info("这不对吧？");
-        }
     }
-
-    static boolean init = false;
 
     private static final Map<Item, Int2ObjectOpenHashMap<ItemConversionTarget>> itemIdToTargetMap = new Object2ObjectOpenHashMap<>();
     private static final Map<String, ItemConversionTarget> odToTargetMap = new Object2ObjectOpenHashMap<>();
@@ -194,8 +188,6 @@ public class MatchItemHandler {
         cleanRecipes.clear();
         recipes0.forEach(RecipeSignature::rebuildRecipe);
         recipes0.clear();
-        OnlyOneItem.LOGGER.info("配方清理结束");
-        init = true;
     }
 
     public static synchronized void Clear() {
