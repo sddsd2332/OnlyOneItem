@@ -3,6 +3,8 @@ package com.circulation.only_one_item;
 import com.circulation.only_one_item.conversion.FluidConversionTarget;
 import com.circulation.only_one_item.conversion.ItemConversionTarget;
 import com.circulation.only_one_item.emun.Type;
+import com.circulation.only_one_item.handler.MatchFluidHandler;
+import com.circulation.only_one_item.handler.MatchItemHandler;
 import com.circulation.only_one_item.util.BlackMatchItem;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -72,5 +74,7 @@ public class OOIConfig {
             blackList.add(BlackMatchItem.getInstance(Type.ModID,"minecraft"));
             Files.write(blackPath, config.toJson(blackList).getBytes());
         }
+        MatchItemHandler.InitTarget();
+        MatchFluidHandler.Init(OOIConfig.fluids);
     }
 }

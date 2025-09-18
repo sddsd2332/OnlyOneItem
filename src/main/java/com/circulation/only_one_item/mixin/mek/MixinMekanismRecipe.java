@@ -1,6 +1,8 @@
 package com.circulation.only_one_item.mixin.mek;
 
 import com.circulation.only_one_item.util.OOIMekRecipe;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import mekanism.common.recipe.RecipeHandler;
 import mekanism.common.recipe.inputs.MachineInput;
 import mekanism.common.recipe.machines.MachineRecipe;
@@ -21,15 +23,9 @@ public abstract class MixinMekanismRecipe<INPUT extends MachineInput<INPUT>, OUT
 
     @Unique
     @Override
-    public void ooi$refresh(){
-        HashMap<INPUT, RECIPE> map = new HashMap<>(recipes);
+    public void ooi$refresh() {
+        Object2ObjectMap<INPUT, RECIPE> map = new Object2ObjectOpenHashMap<>(recipes);
         recipes.clear();
         recipes.putAll(map);
-    }
-
-    @Unique
-    @Override
-    public void ooi$clear(){
-        this.recipes.clear();
     }
 }

@@ -44,33 +44,37 @@ public abstract class MixinItemStack implements OOIItemStack {
     @Unique
     private boolean ooi$isBeReplaced = false;
 
-    @Inject(method = "forgeInit",at = @At("TAIL"),remap = false)
+    @Inject(method = "forgeInit", at = @At("TAIL"), remap = false)
     private void forgeInit(CallbackInfo ci) {
-        if (ooi$init){
+        if (!this.isEmpty()) {
             ooi$ooiInit();
-        } else if (!this.isEmpty()) {
-            MatchItemHandler.addPreItemStack(this);
         }
     }
 
     @Unique
     @Override
-    public boolean ooi$isBeReplaced(){
+    public boolean ooi$isBeReplaced() {
         return ooi$isBeReplaced;
     }
 
     @Unique
     @Override
-    public void ooi$init(){
+    public void ooi$init() {
         ooi$init = true;
     }
 
     @Unique
     @Override
-    public void ooi$ooiInit(){
-        ItemConversionTarget target = MatchItemHandler.match(item,itemDamage);
+    public ItemStack ooi$getThis() {
+        return (ItemStack) (Object) this;
+    }
 
-        if (target != null){
+    @Unique
+    @Override
+    public void ooi$ooiInit() {
+        ItemConversionTarget target = MatchItemHandler.match(item, itemDamage);
+
+        if (target != null) {
             item = target.getTarget();
             ooi$isBeReplaced = true;
             if (item != Items.AIR) {
@@ -79,7 +83,8 @@ public abstract class MixinItemStack implements OOIItemStack {
             } else {
                 this.setCount(0);
             }
+        } else if (!ooi$init) {
+            MatchItemHandler.addPreItemStack(this);
         }
     }
-
 }

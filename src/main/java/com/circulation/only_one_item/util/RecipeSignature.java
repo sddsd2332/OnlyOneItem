@@ -6,6 +6,7 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import lombok.Getter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class RecipeSignature {
+    @Getter
     private final SimpleItem outputSignature;
     private final int outputAmount;
     private final List<Object> inputSignatures;
@@ -35,15 +37,12 @@ public class RecipeSignature {
     private final int hashCode;
     private final int height;
     private final int width;
+    @Getter
     private boolean isModify;
     private static final ForgeRegistry<IRecipe> fr = RegistryManager.ACTIVE.getRegistry(GameData.RECIPES);
 
     Object obs;
     boolean repeat = true;
-
-    public boolean isModify() {
-        return isModify;
-    }
 
     public RecipeSignature(IRecipe recipe) {
         this.outputSignature = SimpleItem.getInstance(recipe.getRecipeOutput());
@@ -149,10 +148,6 @@ public class RecipeSignature {
             }
         }
         return true;
-    }
-
-    public SimpleItem getOutputSignature() {
-        return outputSignature;
     }
 
     public void rebuildRecipe() {

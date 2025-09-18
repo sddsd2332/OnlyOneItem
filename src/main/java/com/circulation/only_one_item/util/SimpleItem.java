@@ -1,65 +1,72 @@
 package com.circulation.only_one_item.util;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import lombok.Getter;
+import lombok.NonNull;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
+import java.util.Map;
 import java.util.Objects;
 
-public class SimpleItem {
-    private final String item;
+public final class SimpleItem {
+    @NonNull
+    private final ResourceLocation item;
+    @Getter
     private final int meta;
-    private final NBTTagCompound nbt;
+    private final int hashCode;
 
+    private static final Map<ResourceLocation, Int2ObjectMap<SimpleItem>> chace = new Object2ObjectOpenHashMap<>();
     public static final SimpleItem EMPTY = SimpleItem.getInstance(ItemStack.EMPTY);
 
-    public boolean isEmpty(){
-        return this == EMPTY || Objects.equals(this.item, "minecraft:air");
+    public boolean isEmpty() {
+        return this == EMPTY || Objects.equals(this.item, ItemStack.EMPTY.getItem().getRegistryName());
     }
 
-    private SimpleItem(Item item, int meta, NBTTagCompound nbt) {
-        this(item.getRegistryName() == null ? "" : item.getRegistryName().toString(), meta, nbt);
-    }
-
-    private SimpleItem(String item, int meta, NBTTagCompound nbt) {
+    private SimpleItem(@NonNull ResourceLocation item, int meta) {
         this.item = item;
         this.meta = meta;
-        this.nbt = nbt;
+        this.hashCode = Objects.hash(item, meta);
     }
 
-    public static SimpleItem getInstance(String item, int meta, NBTTagCompound nbt) {
-        return new SimpleItem(item, meta, nbt);
+    public static SimpleItem getInstance(@NonNull String item, int meta) {
+        return getInstance(new ResourceLocation(item), meta);
     }
 
-    public static SimpleItem getInstance(ItemStack stack) {
-        return new SimpleItem(stack.getItem(), stack.getMetadata(), stack.getTagCompound());
+    public static SimpleItem getInstance(ResourceLocation item, int meta) {
+        var map = chace.computeIfAbsent(item, rl -> new Int2ObjectOpenHashMap<>());
+        if (map.containsKey(meta)) {
+            return map.get(meta);
+        }
+        var value = new SimpleItem(item, meta);
+        map.put(meta, value);
+        return value;
     }
 
-    public Item getItem(){
-        return Item.getByNameOrId(item);
+    public static SimpleItem getInstance(@NonNull ItemStack stack) {
+        return getInstance(stack.getItem().getRegistryName(), stack.getMetadata());
+    }
+
+    public Item getItem() {
+        return Item.getByNameOrId(item.toString());
     }
 
     public String getItemID() {
+        return item.toString();
+    }
+
+    public ResourceLocation getItemRL() {
         return item;
     }
 
-    public int getMeta() {
-        return meta;
-    }
-
-    public NBTTagCompound getNbt() {
-        return nbt;
-    }
-
     public ItemStack getItemStack(int amount) {
-        var stack = Item.getByNameOrId(item);
+        var stack = getItem();
         if (stack != null && stack != Items.AIR) {
-            var stack0 = new ItemStack(stack, amount, meta);
-            if (nbt != null) {
-                stack0.setTagCompound(nbt);
-            }
-            return stack0;
+            return new ItemStack(stack, amount, meta);
         }
         return ItemStack.EMPTY;
     }
@@ -68,20 +75,16 @@ public class SimpleItem {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         SimpleItem that = (SimpleItem) o;
-        return meta == that.meta && Objects.equals(item, that.item) && Objects.equals(nbt, that.nbt);
+        return meta == that.meta && Objects.equals(item, that.item);
     }
 
     @Override
     public int hashCode() {
-        int result = item.hashCode();
-        result = 31 * result + meta;
-        result = 31 * result + (nbt != null ? nbt.hashCode() : 0);
-        return result;
+        return hashCode;
     }
 
     @Override
-    public String toString(){
-        return item + ":" + meta + ":" + nbt;
+    public String toString() {
+        return item + ":" + meta;
     }
-
 }

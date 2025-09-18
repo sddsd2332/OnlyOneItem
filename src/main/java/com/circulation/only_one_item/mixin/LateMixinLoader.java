@@ -1,5 +1,6 @@
 package com.circulation.only_one_item.mixin;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraftforge.fml.common.Loader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -7,21 +8,19 @@ import zone.rong.mixinbooter.ILateMixinLoader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 
-@SuppressWarnings({"unused", "SameParameterValue"})
 public class LateMixinLoader implements ILateMixinLoader {
 
     public static final Logger LOG = LogManager.getLogger("OOI_PRE");
     public static final String LOG_PREFIX = "[OOI]" + ' ';
-    private static final Map<String, BooleanSupplier> MIXIN_CONFIGS = new LinkedHashMap<>();
+    private static final Map<String, BooleanSupplier> MIXIN_CONFIGS = new Object2ObjectLinkedOpenHashMap<>();
 
     static {
-        addModdedMixinCFG("mixins.only_one_item.crt.json","crafttweaker");
-        addModdedMixinCFG("mixins.only_one_item.mek.json","mekanism");
+        addModdedMixinCFG("mixins.only_one_item.crt.json", "crafttweaker");
+        addModdedMixinCFG("mixins.only_one_item.mek.json", "mekanism");
     }
 
     @Override

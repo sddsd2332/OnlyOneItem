@@ -1,12 +1,12 @@
 package com.circulation.only_one_item;
 
 import com.circulation.only_one_item.handler.InitHandler;
-import com.circulation.only_one_item.handler.MatchFluidHandler;
 import com.circulation.only_one_item.handler.MatchItemHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -31,7 +31,7 @@ public class OnlyOneItem {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        MinecraftForge.EVENT_BUS.register(MatchItemHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(new InitHandler());
         if (Loader.isModLoaded("unidict")) {
             LOGGER.warn("OnlyOneItem and UniDict are incompatible, which may cause some errors to occur!");
         }
@@ -44,8 +44,6 @@ public class OnlyOneItem {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        MatchItemHandler.InitTarget();
-        MatchFluidHandler.Init(OOIConfig.fluids);
         if (!Loader.isModLoaded("crafttweaker")) {
             InitHandler.allPreInit();
         }
@@ -56,6 +54,11 @@ public class OnlyOneItem {
         if (!Loader.isModLoaded("unidict")) {
             MatchItemHandler.clearRecipe();
         }
+    }
+
+    @Mod.EventHandler
+    public void loadComplete(FMLLoadCompleteEvent event) {
+        MatchItemHandler.postODProcess();
     }
 
 }
